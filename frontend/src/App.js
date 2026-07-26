@@ -4,7 +4,7 @@ import './App.css';
 
 // ملاحظة: هذا الرابط يعمل على جهازك المحلي فقط. 
 // لاحقاً سنغيره إلى رابط الخادم الخلفي (Backend) المنشور على الإنترنت.
-const API_URL = 'http://127.0.0.1:8000/api/search';
+const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
 function App() {
   const [query, setQuery] = useState('');
