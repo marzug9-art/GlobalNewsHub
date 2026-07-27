@@ -44,7 +44,7 @@ BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live',
 
 # 🌍 مصادر عالمية متنوعة
 NEWS_SOURCES = {
-    # 🇶🇦🇸🇦🇪🇰🇧🇭🇴🇲 عربية وخليجية
+    # 🇦🇸🇦🇪 عربية وخليجية (روابط RSS عاملة)
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
     'skynewsarabia': {'name': 'Sky News Arabia', 'url': 'https://www.skynewsarabia.com/rss', 'credibility': 84, 'country': 'الإمارات'},
@@ -53,18 +53,15 @@ NEWS_SOURCES = {
     'rt_arabic': {'name': 'RT عربي', 'url': 'https://arabic.rt.com/rss', 'credibility': 78, 'country': 'روسيا'},
     'dw_arabic': {'name': 'DW عربي', 'url': 'https://rss.dw.com/xml/rss/ar-all', 'credibility': 90, 'country': 'ألمانيا'},
     'montecarlo': {'name': 'مونت كارلو', 'url': 'https://www.mc-doualiya.com/rss', 'credibility': 87, 'country': 'فرنسا'},
-    'alhurra': {'name': 'الحرة', 'url': 'https://www.alhurra.com/api/zr8z-lq4r', 'credibility': 80, 'country': 'أمريكا'},
-    'aa_arabic': {'name': 'الأناضول عربي', 'url': 'https://www.aa.com.tr/tr/rss/default?cat=guncel', 'credibility': 82, 'country': 'تركيا'},
-    'cnn_arabic': {'name': 'CNN عربية', 'url': 'http://arabic.cnn.com/api/v1/rss/rss.xml', 'credibility': 83, 'country': 'أمريكا'},
+    'aa_arabic': {'name': 'الأناضول عربي', 'url': 'https://www.aa.com.tr/ar/rss', 'credibility': 82, 'country': 'تركيا'},
     
-    # 🇸🇦🇦🇪🇼 خليجية إضافية
-    'aleqt': {'name': 'الاقتصادية', 'url': 'https://www.aleqt.com/rss', 'credibility': 86, 'country': 'السعودية'},
-    'sabq': {'name': 'سبق', 'url': 'https://sabq.org/rss', 'credibility': 79, 'country': 'السعودية'},
+    # 🇸🇦🇦🇪🇰🇼 خليجية إضافية (روابط عاملة)
+    'okaz': {'name': 'عكاظ', 'url': 'https://www.okaz.com.sa/rss', 'credibility': 83, 'country': 'السعودية'},
+    'alquds': {'name': 'القدس العربي', 'url': 'https://www.alquds.co.uk/feed', 'credibility': 81, 'country': 'لندن'},
+    'arabi21': {'name': 'عربي21', 'url': 'https://arabi21.com/rss', 'credibility': 77, 'country': 'قطر'},
+    'almajal': {'name': 'المجد', 'url': 'https://www.almajal.net/rss', 'credibility': 76, 'country': 'السعودية'},
     'alkhaleej': {'name': 'الخليج', 'url': 'https://www.alkhaleej.ae/rss', 'credibility': 84, 'country': 'الإمارات'},
     'albayan': {'name': 'البيان', 'url': 'https://www.albayan.ae/rss', 'credibility': 83, 'country': 'الإمارات'},
-    'alittihad': {'name': 'الاتحاد', 'url': 'https://www.alittihad.ae/rss', 'credibility': 82, 'country': 'الإمارات'},
-    'alqabas': {'name': 'القبس', 'url': 'https://alqabas.com/feed', 'credibility': 81, 'country': 'الكويت'},
-    'alwatan_kuwait': {'name': 'الوطن الكويتية', 'url': 'https://alwatan.kuwait.tt/rss', 'credibility': 79, 'country': 'الكويت'},
     
     # 🇬🇧 بريطانية
     'bbc': {'name': 'BBC', 'url': 'http://feeds.bbci.co.uk/news/world/rss.xml', 'credibility': 95, 'country': 'بريطانيا'},
@@ -76,27 +73,24 @@ NEWS_SOURCES = {
     'apnews': {'name': 'AP News', 'url': 'https://apnews.com/apf-topnews.rss', 'credibility': 97, 'country': 'أمريكا'},
     'washingtonpost': {'name': 'Washington Post', 'url': 'https://feeds.washingtonpost.com/rss/world', 'credibility': 92, 'country': 'أمريكا'},
     'bloomberg': {'name': 'Bloomberg', 'url': 'https://feeds.bloomberg.com/markets/news.rss', 'credibility': 94, 'country': 'أمريكا'},
-    'foxnews': {'name': 'Fox News', 'url': 'http://feeds.foxnews.com/foxnews/world', 'credibility': 78, 'country': 'أمريكا'},
     
-    # 🇫🇷🇺 أوروبية
+    # 🇫🇷🇩🇪 أوروبية
     'lemonde': {'name': 'Le Monde', 'url': 'https://www.lemonde.fr/rss/une.xml', 'credibility': 91, 'country': 'فرنسا'},
     'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
     'dw': {'name': 'Deutsche Welle', 'url': 'https://rss.dw.com/rdf/rss-en-all', 'credibility': 91, 'country': 'ألمانيا'},
     
-    # 🇮🇷 إيرانية
+    # 🇮 إيرانية
     'presstv': {'name': 'Press TV', 'url': 'https://www.presstv.com/RSSFeed/rss', 'credibility': 75, 'country': 'إيران'},
     
-    # 🇮 إسرائيلية
+    # 🇮🇱 إسرائيلية
     'haaretz': {'name': 'Haaretz', 'url': 'https://www.haaretz.com/csp/feeds/1.593', 'credibility': 85, 'country': 'إسرائيل'},
     'timesofisrael': {'name': 'Times of Israel', 'url': 'https://www.timesofisrael.com/feed/', 'credibility': 83, 'country': 'إسرائيل'},
     
-    # 🇵🇨🇳 آسيوية
+    #  آسيوية
     'nhk': {'name': 'NHK World', 'url': 'https://www3.nhk.or.jp/rss/news/cat0.xml', 'credibility': 93, 'country': 'اليابان'},
     'chinadaily': {'name': 'China Daily', 'url': 'http://www.chinadaily.com.cn/rss/world_rss.xml', 'credibility': 75, 'country': 'الصين'},
-    'xinhua': {'name': 'Xinhua', 'url': 'http://www.xinhuanet.com/english/rss/worldrss.xml', 'credibility': 76, 'country': 'الصين'},
     
-    # 🌍 عالمية وإفريقية
-    'africanews': {'name': 'Africanews', 'url': 'https://www.africanews.com/feed/', 'credibility': 80, 'country': 'أفريقيا'},
+    # 🌍 عالمية
     'reuters': {'name': 'Reuters', 'url': 'https://www.reutersagency.com/feed/', 'credibility': 96, 'country': 'عالمي'},
     'aljazeera_en': {'name': 'Al Jazeera English', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 88, 'country': 'قطر'},
 }
