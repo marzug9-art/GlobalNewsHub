@@ -98,7 +98,7 @@ function App() {
             setQuery('');
           }}
         >
-          🚨 عرض الأخبار العاجلة فقط
+           عرض الأخبار العاجلة فقط
         </button>
       </div>
 
@@ -142,7 +142,7 @@ function App() {
       <div className="articles-grid">
         {articles.map((article) => (
           <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
-            {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
+            {article.is_breaking && <span className="breaking-badge"> عاجل</span>}
             <h3>{article.title}</h3>
             <p className="article-summary">{article.summary}</p>
             <div className="article-meta">
@@ -158,7 +158,7 @@ function App() {
               <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
               <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">
                 اقرأ الأصل ←
-             a>
+              </a>
             </div>
           </div>
         ))}
