@@ -12,7 +12,6 @@ function App() {
   const [error, setError] = useState('');
   const [searchCount, setSearchCount] = useState(0);
   
-  // النقطة 2: فلاتر جديدة
   const [sourceFilter, setSourceFilter] = useState('');
   const [maxDays, setMaxDays] = useState(3);
   const [showBreakingOnly, setShowBreakingOnly] = useState(false);
@@ -46,7 +45,6 @@ function App() {
     setLoading(false);
   };
 
-  // النقطة 3: دالة حفظ PDF
   const saveAsPDF = (article) => {
     const element = document.createElement('div');
     element.innerHTML = `
@@ -84,12 +82,6 @@ function App() {
 
   return (
     <div className="App" dir="rtl">
-      <header className="header">
-        <h1>🌍 GlobalNewsHub</h1>
-        <p>أخبار العالم في مكان واحد - موثوقة ومفلترة</p>
-      </header>
-
-      {/* النقطة 4: زر الأخبار العاجلة */}
       <div className="breaking-news-container">
         <button 
           className={`breaking-btn ${showBreakingOnly ? 'active' : ''}`}
@@ -98,9 +90,17 @@ function App() {
             setQuery('');
           }}
         >
-           عرض الأخبار العاجلة فقط
+          🚨 عرض الأخبار العاجلة فقط
         </button>
       </div>
+
+      <header className="header">
+        <h1>
+          GlobalNewsHub 
+          <span className="earth-icon"></span>
+        </h1>
+        <p>أخبار العالم في مكان واحد - موثوقة ومفلترة</p>
+      </header>
 
       {!showBreakingOnly && (
         <div className="search-container">
@@ -112,32 +112,40 @@ function App() {
             onKeyPress={(e) => e.key === 'Enter' && searchNews()}
           />
           
-          {/* النقطة 2: فلاتر متقدمة */}
-          <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="filter-select">
-            <option value="">كل المصادر</option>
-            <option value="الجزيرة">الجزيرة</option>
-            <option value="العربية">العربية</option>
-            <option value="BBC">BBC</option>
-            <option value="CNN">CNN</option>
-            <option value="Reuters">Reuters</option>
-            <option value="RT">RT عربي</option>
-          </select>
+          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="filter-select">
+              <option value="">كل المصادر</option>
+              <option value="الجزيرة">الجزيرة</option>
+              <option value="العربية">العربية</option>
+              <option value="BBC">BBC</option>
+              <option value="CNN">CNN</option>
+              <option value="Reuters">Reuters</option>
+              <option value="RT">RT عربي</option>
+            </select>
 
-          <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
-            <option value={1}>آخر 24 ساعة</option>
-            <option value={3}>آخر 3 أيام</option>
-            <option value={7}>آخر أسبوع</option>
-            <option value={30}>آخر شهر</option>
-          </select>
+            <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
+              <option value={1}>آخر 24 ساعة</option>
+              <option value={3}>آخر 3 أيام</option>
+              <option value={7}>آخر أسبوع</option>
+              <option value={30}>آخر شهر</option>
+            </select>
 
-          <button onClick={searchNews} disabled={loading}>
-            {loading ? 'جاري البحث...' : 'بحث'}
-          </button>
+            <button onClick={searchNews} disabled={loading}>
+              {loading ? 'جاري البحث...' : 'بحث'}
+            </button>
+          </div>
         </div>
       )}
 
       {error && <div className="error-message">{error}</div>}
-      {searchCount > 0 && <div className="search-info">تم العثور على {searchCount} خبر</div>}
+      
+      {/* الفاصل بين البحث والنتائج */}
+      {searchCount > 0 && (
+        <div className="results-divider">
+          <div className="divider-text">📰 تم العثور على {searchCount} خبر</div>
+          <hr />
+        </div>
+      )}
 
       <div className="articles-grid">
         {articles.map((article) => (
@@ -146,10 +154,10 @@ function App() {
             <h3>{article.title}</h3>
             <p className="article-summary">{article.summary}</p>
             <div className="article-meta">
-              <span className="source">{article.source} ({article.country})</span>
-              <span className="date">{article.published}</span>
+              <span className="source">📰 {article.source} ({article.country})</span>
+              <span className="date">📅 {article.published}</span>
               <span className={`credibility credibility-${article.credibility > 90 ? 'high' : article.credibility > 80 ? 'medium' : 'low'}`}>
-                مصداقية: {article.credibility}%
+                ✅ مصداقية: {article.credibility}%
               </span>
             </div>
             
@@ -157,14 +165,13 @@ function App() {
               <button onClick={() => saveAsPDF(article)} className="action-btn pdf">📄 حفظ PDF</button>
               <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
               <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">
-                اقرأ الأصل ←
+                📖 اقرأ الأصل
               </a>
             </div>
           </div>
         ))}
       </div>
 
-      {/* النقطة 0: رسالة إخلاء المسؤولية القانونية */}
       <footer className="legal-footer">
         <p>⚠️ <strong>تنويه قانوني:</strong> يلتزم GlobalNewsHub بفلترة المحتوى المشبوه، الجنسي، وغير الأخلاقي تلقائياً لضمان بيئة آمنة ومتوافقة مع القوانين المحلية والدولية. نحن لا نتحمل مسؤولية محتوى المواقع الخارجية التي يتم الارتباط بها.</p>
         <p>© 2026 GlobalNewsHub - جميع الحقوق محفوظة</p>
