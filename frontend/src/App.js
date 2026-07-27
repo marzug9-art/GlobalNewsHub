@@ -114,64 +114,71 @@ function App() {
           
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="filter-select">
-  <option value="">🌍 كل المصادر</option>
-  
-  <optgroup label="🇶🇦🇸🇦🇦🇪 عربية وخليجية">
-    <option value="الجزيرة">الجزيرة (قطر)</option>
-    <option value="العربية">العربية (السعودية)</option>
-    <option value="Sky News Arabia">Sky News Arabia (الإمارات)</option>
-    <option value="BBC عربي">BBC عربي</option>
-    <option value="فرانس 24 عربي">فرانس 24 عربي</option>
-    <option value="RT عربي">RT عربي</option>
-    <option value="DW عربي">DW عربي</option>
-    <option value="مونت كارلو">مونت كارلو</option>
-    <option value="الحرة">الحرة</option>
-    <option value="الأناضول">الأناضول</option>
-    <option value="CNN عربية">CNN عربية</option>
-    <option value="الاقتصادية">الاقتصادية (السعودية)</option>
-    <option value="سبق">سبق (السعودية)</option>
-    <option value="الخليج">الخليج (الإمارات)</option>
-    <option value="البيان">البيان (الإمارات)</option>
-    <option value="الاتحاد">الاتحاد (الإمارات)</option>
-    <option value="القبس">القبس (الكويت)</option>
-    <option value="الوطن">الوطن (الكويت)</option>
-  </optgroup>
-  
-  <optgroup label="🇬🇧 بريطانية">
-    <option value="BBC">BBC</option>
-    <option value="The Guardian">The Guardian</option>
-  </optgroup>
-  
-  <optgroup label="🇺🇸 أمريكية">
-    <option value="CNN">CNN</option>
-    <option value="New York Times">New York Times</option>
-    <option value="AP News">AP News</option>
-    <option value="Washington Post">Washington Post</option>
-    <option value="Bloomberg">Bloomberg</option>
-    <option value="Fox News">Fox News</option>
-  </optgroup>
-  
-  <optgroup label="🇪🇺 أوروبية">
-    <option value="Le Monde">Le Monde (فرنسا)</option>
-    <option value="Euronews">Euronews</option>
-    <option value="Deutsche Welle">Deutsche Welle (ألمانيا)</option>
-  </optgroup>
-  
-  <optgroup label="🌏 آسيوية">
-    <option value="NHK World">NHK World (اليابان)</option>
-    <option value="China Daily">China Daily (الصين)</option>
-    <option value="Xinhua">Xinhua (الصين)</option>
-    <option value="Press TV">Press TV (إيران)</option>
-  </optgroup>
-  
-  <optgroup label="🌍 عالمية وإفريقية">
-    <option value="Haaretz">Haaretz (إسرائيل)</option>
-    <option value="Times of Israel">Times of Israel</option>
-    <option value="Africanews">Africanews (أفريقيا)</option>
-    <option value="Reuters">Reuters (عالمي)</option>
-    <option value="Al Jazeera English">Al Jazeera English</option>
-  </optgroup>
-</select>
+              <option value="">🌍 كل المصادر</option>
+              
+              <optgroup label="🇶🇦🇸🇦🇦🇪 عربية وخليجية">
+                <option value="الجزيرة">الجزيرة (قطر)</option>
+                <option value="العربية">العربية (السعودية)</option>
+                <option value="Sky News Arabia">Sky News Arabia (الإمارات)</option>
+                <option value="BBC عربي">BBC عربي</option>
+                <option value="فرانس 24 عربي">فرانس 24 عربي</option>
+                <option value="RT عربي">RT عربي</option>
+                <option value="DW عربي">DW عربي</option>
+                <option value="مونت كارلو">مونت كارلو</option>
+                <option value="الحرة">الحرة</option>
+                <option value="الأناضول">الأناضول</option>
+                <option value="CNN عربية">CNN عربية</option>
+                <option value="الاقتصادية">الاقتصادية (السعودية)</option>
+                <option value="سبق">سبق (السعودية)</option>
+                <option value="الخليج">الخليج (الإمارات)</option>
+                <option value="البيان">البيان (الإمارات)</option>
+                <option value="الاتحاد">الاتحاد (الإمارات)</option>
+                <option value="القبس">القبس (الكويت)</option>
+                <option value="الوطن">الوطن (الكويت)</option>
+              </optgroup>
+              
+              <optgroup label="🇬🇧 بريطانية">
+                <option value="BBC">BBC</option>
+                <option value="The Guardian">The Guardian</option>
+              </optgroup>
+              
+              <optgroup label="🇺🇸 أمريكية">
+                <option value="CNN">CNN</option>
+                <option value="New York Times">New York Times</option>
+                <option value="AP News">AP News</option>
+                <option value="Washington Post">Washington Post</option>
+                <option value="Bloomberg">Bloomberg</option>
+                <option value="Fox News">Fox News</option>
+              </optgroup>
+              
+              <optgroup label="🇺 أوروبية">
+                <option value="Le Monde">Le Monde (فرنسا)</option>
+                <option value="Euronews">Euronews</option>
+                <option value="Deutsche Welle">Deutsche Welle (ألمانيا)</option>
+              </optgroup>
+              
+              <optgroup label="🌏 آسيوية">
+                <option value="NHK World">NHK World (اليابان)</option>
+                <option value="China Daily">China Daily (الصين)</option>
+                <option value="Xinhua">Xinhua (الصين)</option>
+                <option value="Press TV">Press TV (إيران)</option>
+              </optgroup>
+              
+              <optgroup label="🌍 عالمية وإفريقية">
+                <option value="Haaretz">Haaretz (إسرائيل)</option>
+                <option value="Times of Israel">Times of Israel</option>
+                <option value="Africanews">Africanews (أفريقيا)</option>
+                <option value="Reuters">Reuters (عالمي)</option>
+                <option value="Al Jazeera English">Al Jazeera English</option>
+              </optgroup>
+            </select>
+
+            <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
+              <option value={1}>آخر 24 ساعة</option>
+              <option value={3}>آخر 3 أيام</option>
+              <option value={7}>آخر أسبوع</option>
+              <option value={30}>آخر شهر</option>
+            </select>
 
             <button onClick={searchNews} disabled={loading}>
               {loading ? 'جاري البحث...' : 'بحث'}
@@ -182,7 +189,6 @@ function App() {
 
       {error && <div className="error-message">{error}</div>}
       
-      {/* الفاصل بين البحث والنتائج */}
       {searchCount > 0 && (
         <div className="results-divider">
           <div className="divider-text">📰 تم العثور على {searchCount} خبر</div>
@@ -193,7 +199,7 @@ function App() {
       <div className="articles-grid">
         {articles.map((article) => (
           <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
-            {article.is_breaking && <span className="breaking-badge"> عاجل</span>}
+            {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
             <h3>{article.title}</h3>
             <p className="article-summary">{article.summary}</p>
             <div className="article-meta">
@@ -205,10 +211,10 @@ function App() {
             </div>
             
             <div className="article-actions">
-              <button onClick={() => saveAsPDF(article)} className="action-btn pdf">📄 حفظ PDF</button>
+              <button onClick={() => saveAsPDF(article)} className="action-btn pdf"> حفظ PDF</button>
               <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
               <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">
-                📖 اقرأ الأصل
+                 اقرأ الأصل
               </a>
             </div>
           </div>
