@@ -108,6 +108,35 @@
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+/* ===== القوائم المنسدلة ===== */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: white;
+  color: #333;
+  text-align: right;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding-right: 25px;
+}
+
+.dropdown-item:first-child {
+  border-radius: 0;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 10px 10px;
 }
 
 .filter-select {
