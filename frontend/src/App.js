@@ -5,6 +5,31 @@ import './App.css';
 
 const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
+// روابط مباشرة للصحف العربية والخليجية
+const ARABIC_NEWSPAPERS = {
+  'الجزيرة': 'https://www.aljazeera.com',
+  'العربية': 'https://www.alarabiya.net',
+  'Sky News Arabia': 'https://www.skynewsarabia.com',
+  'BBC عربي': 'https://www.bbc.com/arabic',
+  'فرانس 24 عربي': 'https://www.france24.com/ar',
+  'RT عربي': 'https://arabic.rt.com',
+  'DW عربي': 'https://www.dw.com/ar',
+  'مونت كارلو': 'https://www.mc-doualiya.com',
+  'عكاظ': 'https://www.okaz.com.sa',
+  'عربي21': 'https://arabi21.com',
+  'القدس العربي': 'https://www.alquds.co.uk'
+};
+
+const GULF_NEWSPAPERS = {
+  'العربية': 'https://www.alarabiya.net',
+  'عكاظ': 'https://www.okaz.com.sa',
+  'Sky News Arabia': 'https://www.skynewsarabia.com',
+  'الخليج': 'https://www.alkhaleej.ae',
+  'البيان': 'https://www.albayan.ae',
+  'الاتحاد': 'https://www.alittihad.ae',
+  'الجزيرة': 'https://www.aljazeera.com'
+};
+
 function App() {
   const [query, setQuery] = useState('');
   const [articles, setArticles] = useState([]);
@@ -17,9 +42,9 @@ function App() {
   const [showBreakingOnly, setShowBreakingOnly] = useState(false);
   
   // حالات القوائم المنسدلة
-  const [showArabicSources, setShowArabicSources] = useState(false);
-  const [showGulfSources, setShowGulfSources] = useState(false);
-  const [showGlobalSources, setShowGlobalSources] = useState(false);
+  const [showSources, setShowSources] = useState(false);
+  const [showArabicNewspapers, setShowArabicNewspapers] = useState(false);
+  const [showGulfNewspapers, setShowGulfNewspapers] = useState(false);
 
   const searchNews = async () => {
     if (!query.trim() && !showBreakingOnly) return;
@@ -56,7 +81,7 @@ function App() {
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>📰 المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
+          <p><strong>📰 المصدر:</strong> ${article.source} | <strong> الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;">
@@ -77,11 +102,15 @@ function App() {
     navigator.clipboard.writeText(link).then(() => alert('تم نسخ الرابط بنجاح!'));
   };
 
+  // دالة لاختيار مصدر للبحث
   const selectSource = (sourceName) => {
     setSourceFilter(sourceName);
-    setShowArabicSources(false);
-    setShowGulfSources(false);
-    setShowGlobalSources(false);
+    setShowSources(false);
+  };
+
+  // دالة لفتح موقع الصحيفة في تبويب جديد
+  const openNewspaper = (url) => {
+    window.open(url, '_blank');
   };
 
   return (
@@ -101,69 +130,67 @@ function App() {
         <div className="search-container">
           <input type="text" placeholder="ابحث عن خبر... (مثال: ايران, الكويت, أمريكا)" value={query} onChange={(e) => setQuery(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && searchNews()} />
           
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
             
-            {/* زر الصحف العربية */}
+            {/* زر البحث */}
+            <button onClick={searchNews} disabled={loading} style={{ minWidth: '100px' }}>
+              {loading ? 'جاري...' : 'بحث'}
+            </button>
+
+            {/* زر المصادر (للبحث في الموقع) */}
             <div style={{ position: 'relative' }}>
-              <button className="filter-select" onClick={() => { setShowArabicSources(!showArabicSources); setShowGulfSources(false); setShowGlobalSources(false); }}>
-                 الصحف العربية {showArabicSources ? '▲' : '▼'}
+              <button className="filter-select" onClick={() => { setShowSources(!showSources); setShowArabicNewspapers(false); setShowGulfNewspapers(false); }}>
+                 المصادر {showSources ? '▲' : '▼'}
               </button>
-              {showArabicSources && (
+              {showSources && (
                 <div className="dropdown-menu">
-                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>📰 الصحف العربية</strong></div>
-                  <button className="dropdown-item" onClick={() => selectSource('الجزيرة')}>الجزيرة (قطر)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('العربية')}>العربية (السعودية)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('Sky News Arabia')}>Sky News Arabia (الإمارات)</button>
+                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>🔍 مصادر للبحث</strong></div>
+                  <button className="dropdown-item" onClick={() => selectSource('الجزيرة')}>الجزيرة</button>
+                  <button className="dropdown-item" onClick={() => selectSource('العربية')}>العربية</button>
+                  <button className="dropdown-item" onClick={() => selectSource('Sky News Arabia')}>Sky News Arabia</button>
                   <button className="dropdown-item" onClick={() => selectSource('BBC عربي')}>BBC عربي</button>
-                  <button className="dropdown-item" onClick={() => selectSource('فرانس 24 عربي')}>فرانس 24 عربي</button>
-                  <button className="dropdown-item" onClick={() => selectSource('RT عربي')}>RT عربي</button>
-                  <button className="dropdown-item" onClick={() => selectSource('DW عربي')}>DW عربي</button>
-                  <button className="dropdown-item" onClick={() => selectSource('مونت كارلو')}>مونت كارلو</button>
-                  <button className="dropdown-item" onClick={() => selectSource('عكاظ')}>عكاظ (السعودية)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('الخليج')}>الخليج (الإمارات)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('البيان')}>البيان (الإمارات)</button>
+                  <button className="dropdown-item" onClick={() => selectSource('CNN')}>CNN</button>
+                  <button className="dropdown-item" onClick={() => selectSource('Reuters')}>Reuters</button>
+                  <button className="dropdown-item" onClick={() => selectSource('')}>كل المصادر</button>
                 </div>
               )}
             </div>
 
-            {/* زر الصحف الخليجية */}
+            {/* زر الصحف العربية (روابط مباشرة) */}
             <div style={{ position: 'relative' }}>
-              <button className="filter-select" onClick={() => { setShowGulfSources(!showGulfSources); setShowArabicSources(false); setShowGlobalSources(false); }}>
-                 الصحف الخليجية {showGulfSources ? '▲' : '▼'}
+              <button className="filter-select" onClick={() => { setShowArabicNewspapers(!showArabicNewspapers); setShowSources(false); setShowGulfNewspapers(false); }}>
+                 الصحف العربية {showArabicNewspapers ? '▲' : '▼'}
               </button>
-              {showGulfSources && (
+              {showArabicNewspapers && (
                 <div className="dropdown-menu">
-                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>🏛️ الصحف الخليجية</strong></div>
-                  <button className="dropdown-item" onClick={() => selectSource('العربية')}>العربية (السعودية)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('عكاظ')}>عكاظ (السعودية)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('Sky News Arabia')}>Sky News Arabia (الإمارات)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('الخليج')}>الخليج (الإمارات)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('البيان')}>البيان (الإمارات)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('الجزيرة')}>الجزيرة (قطر)</button>
+                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>📰 الصحف العربية (روابط مباشرة)</strong></div>
+                  {Object.entries(ARABIC_NEWSPAPERS).map(([name, url]) => (
+                    <button key={name} className="dropdown-item" onClick={() => openNewspaper(url)}>
+                       {name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* زر الصحف العالمية */}
+            {/* زر الصحف الخليجية (روابط مباشرة) */}
             <div style={{ position: 'relative' }}>
-              <button className="filter-select" onClick={() => { setShowGlobalSources(!showGlobalSources); setShowArabicSources(false); setShowGulfSources(false); }}>
-                🌍 الصحف العالمية {showGlobalSources ? '▲' : '▼'}
+              <button className="filter-select" onClick={() => { setShowGulfNewspapers(!showGulfNewspapers); setShowSources(false); setShowArabicNewspapers(false); }}>
+                 الصحف الخليجية {showGulfNewspapers ? '▲' : '▼'}
               </button>
-              {showGlobalSources && (
+              {showGulfNewspapers && (
                 <div className="dropdown-menu">
-                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>🌍 الصحف العالمية</strong></div>
-                  <button className="dropdown-item" onClick={() => selectSource('BBC')}>BBC (بريطانيا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('The Guardian')}>The Guardian (بريطانيا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('CNN')}>CNN (أمريكا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('New York Times')}>New York Times (أمريكا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('AP News')}>AP News (أمريكا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('Reuters')}>Reuters (عالمي)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('Le Monde')}>Le Monde (فرنسا)</button>
-                  <button className="dropdown-item" onClick={() => selectSource('Deutsche Welle')}>Deutsche Welle (ألمانيا)</button>
+                  <div style={{ padding: '10px', borderBottom: '2px solid #f0f0f0' }}><strong style={{ color: '#667eea' }}>🏛️ الصحف الخليجية (روابط مباشرة)</strong></div>
+                  {Object.entries(GULF_NEWSPAPERS).map(([name, url]) => (
+                    <button key={name} className="dropdown-item" onClick={() => openNewspaper(url)}>
+                       {name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
+            {/* فلتر التاريخ */}
             <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
               <option value={1}>آخر 24 ساعة</option>
               <option value={3}>آخر 3 أيام</option>
@@ -171,12 +198,12 @@ function App() {
               <option value={30}>آخر شهر</option>
             </select>
 
-            <button onClick={searchNews} disabled={loading}>{loading ? 'جاري البحث...' : 'بحث'}</button>
           </div>
           
+          {/* عرض المصدر المحدد للبحث */}
           {sourceFilter && (
             <div style={{ marginTop: '15px', padding: '10px 15px', backgroundColor: '#667eea', color: 'white', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-              <span> المصدر المحدد:</span>
+              <span> البحث في:</span>
               <strong>{sourceFilter}</strong>
               <button onClick={() => setSourceFilter('')} style={{ background: 'rgba(255,255,255,0.3)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', color: 'white', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
