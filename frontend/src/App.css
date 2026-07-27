@@ -83,7 +83,7 @@
 
 /* ===== حاوية البحث ===== */
 .search-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto 40px auto;
   padding: 30px;
   background: rgba(255, 255, 255, 0.95);
@@ -102,13 +102,50 @@
   font-family: 'Tajawal', sans-serif;
   transition: all 0.3s;
   text-align: right;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .search-container input[type="text"]:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
-/* ===== القوائم المنسدلة ===== */
+} /* <--- هذا هو القوس الذي كان مفقوداً ويسبب المشكلة! */
+
+/* ===== القوائم المنسدلة والأزرار ===== */
+.filter-select {
+  padding: 15px 20px;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 160px;
+}
+
+.filter-select:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  z-index: 1000;
+  min-width: 220px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
 .dropdown-item {
   display: block;
   width: 100%;
@@ -128,38 +165,6 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding-right: 25px;
-}
-
-.dropdown-item:first-child {
-  border-radius: 0;
-}
-
-.dropdown-item:last-child {
-  border-bottom: none;
-  border-radius: 0 0 10px 10px;
-}
-
-.filter-select {
-  padding: 15px 20px;
-  border: 2px solid #667eea;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.filter-select:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.filter-select option {
-  background: white;
-  color: #333;
 }
 
 .search-container button {
@@ -220,18 +225,6 @@
   text-align: center;
   font-size: 18px;
   box-shadow: 0 5px 20px rgba(238, 90, 111, 0.4);
-}
-
-.search-info {
-  text-align: center;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  margin: 20px auto;
-  max-width: 900px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #667eea;
 }
 
 /* ===== شبكة المقالات ===== */
@@ -335,20 +328,9 @@
   font-size: 14px;
 }
 
-.credibility-high {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
-}
-
-.credibility-medium {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.credibility-low {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-}
+.credibility-high { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+.credibility-medium { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+.credibility-low { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; }
 
 /* ===== أزرار الإجراءات ===== */
 .article-actions {
@@ -371,24 +353,9 @@
   text-align: center;
 }
 
-.action-btn.pdf {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
-}
-
-.action-btn.copy {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.action-btn.read-more {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.action-btn.pdf { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+.action-btn.copy { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.action-btn.read-more { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; }
 
 .action-btn:hover {
   transform: translateY(-3px);
@@ -407,36 +374,14 @@
   box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
 }
 
-.legal-footer strong {
-  color: #f1c40f;
-}
-
-.legal-footer p {
-  margin: 10px 0;
-}
+.legal-footer strong { color: #f1c40f; }
+.legal-footer p { margin: 10px 0; }
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .header h1 {
-    font-size: 2rem;
-  }
-  
-  .breaking-news-container {
-    position: static;
-    margin-bottom: 20px;
-  }
-  
-  .search-container {
-    margin: 0 15px 30px 15px;
-    padding: 20px;
-  }
-  
-  .articles-grid {
-    grid-template-columns: 1fr;
-    padding: 10px;
-  }
-  
-  .article-card h3 {
-    padding-left: 0;
-  }
+  .header h1 { font-size: 2rem; }
+  .breaking-news-container { position: static; margin-bottom: 20px; }
+  .search-container { margin: 0 15px 30px 15px; padding: 20px; }
+  .articles-grid { grid-template-columns: 1fr; padding: 10px; }
+  .article-card h3 { padding-left: 0; }
 }
