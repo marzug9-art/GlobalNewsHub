@@ -21,7 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ===== إعدادات التسريع والذاكرة المؤقتة =====
 CACHE = {}
 CACHE_LOCK = threading.Lock()
 CACHE_DURATION = 60 * 5
@@ -63,7 +62,6 @@ NEWS_SOURCES = {
     'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
 }
 
-# مصادر البحث الشامل (مدونات خليجية + تحليلية)
 SECONDARY_SOURCES = {
     'gulf_economy': {'name': 'الخليج الاقتصادي', 'url': 'https://gulf-economy.com/feed/', 'credibility': 82, 'country': 'خليجي'},
     'vision_uae': {'name': 'رؤية الإمارات', 'url': 'https://vision2030.ae/feed/', 'credibility': 85, 'country': 'الإمارات'},
@@ -97,6 +95,26 @@ def clean_html(raw_html: str) -> str:
     clean_text = re.sub(r'<[^>]+>', '', raw_html)
     return re.sub(r'\s+', ' ', clean_text).strip()[:300] + ('...' if len(clean_text) > 300 else '')
 
+# دالة معالجة التاريخ المحسنة
+def parse_date_safely(entry):
+    date_fields = ['published', 'updated', 'created']
+    for field in date_fields:
+        raw_date = entry.get(field)
+        if raw_date:
+            try:
+                dt = parsedate_to_datetime(raw_date)
+                return dt.strftime('%Y-%m-%d %H:%M'), dt
+            except Exception:
+                # محاولة ثانية لصيغ تواريخ مختلفة
+                formats = ['%Y-%m-%dT%H:%M:%S%z', '%a, %d %b %Y %H:%M:%S %z', '%Y-%m-%d %H:%M:%S']
+                for fmt in formats:
+                    try:
+                        dt = datetime.strptime(raw_date, fmt)
+                        return dt.strftime('%Y-%m-%d %H:%M'), dt
+                    except ValueError:
+                        continue
+    return None, None
+
 def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
     articles = []
     try:
@@ -109,12 +127,15 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
             summary = clean_html(raw_summary)
             if not is_content_safe(summary): continue
             
-            try:
-                published_dt = parsedate_to_datetime(entry.get('published'))
-                if published_dt < cutoff_date: continue
+            # استخدام دالة التاريخ المحسنة
+            published_str, published_dt = parse_date_safely(entry)
+            
+            # إذا فشل استخراج التاريخ، نستخدم تاريخ اليوم كقيمة افتراضية بدلاً من "غير محدد"
+            if published_dt is None:
+                published_dt = datetime.now()
                 published_str = published_dt.strftime('%Y-%m-%d %H:%M')
-            except: 
-                published_str = 'تاريخ غير محدد'
+                
+            if published_dt < cutoff_date: continue
             
             searchable_text = f"{title} {summary}".lower()
             if any(term in searchable_text for term in search_terms):
@@ -148,7 +169,6 @@ def search_news(request: SearchRequest):
     search_terms = list(set(search_terms))
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    # تحديد المصادر بناءً على نوع البحث
     target_sources = NEWS_SOURCES
     if request.global_search or request.include_blogs:
         target_sources = {**NEWS_SOURCES, **SECONDARY_SOURCES}
