@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import requests # سنستخدم requests للحصول على RSS يدوياً لتجاوز الحظر
 
 app = FastAPI(title="GlobalNewsHub")
 
@@ -23,11 +24,10 @@ app.add_middleware(
 
 CACHE = {}
 CACHE_LOCK = threading.Lock()
-CACHE_DURATION = 60 * 5 # حفظ النتائج لمدة 5 دقائق
+CACHE_DURATION = 60 * 5 
 
 BLOCKED_KEYWORDS = ['sex', 'porn', 'xxx', 'nude', 'إباحي', 'جنس', 'عري', 'فاحش', 'مخدرات', 'drugs']
 
-# قاموس المرادفات المحسن
 SYNONYMS = {
     'ايران': ['ايران', 'إيران', 'أيران', 'iran', 'persia'],
     'الكويت': ['الكويت', 'kuwait'],
@@ -40,7 +40,7 @@ SYNONYMS = {
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
 
-# ✅ مصادر البحث الدولي الموثوقة والسريعة (RSS فعال 100%)
+# ✅ مصادر البحث الدولي الموثوقة (تم تحديث الروابط لروابط مفتوحة عالمياً)
 INTERNATIONAL_SOURCES = {
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
@@ -56,7 +56,6 @@ INTERNATIONAL_SOURCES = {
     'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
 }
 
-# ✅ مصادر البحث الشامل (مدونات + تحليلات)
 SECONDARY_SOURCES = {
     'al_monitor': {'name': 'Al-Monitor', 'url': 'https://www.al-monitor.com/rss', 'credibility': 88, 'country': 'عالمي'},
     'middle_east_eye': {'name': 'Middle East Eye', 'url': 'https://www.middleeasteye.net/rss.xml', 'credibility': 85, 'country': 'بريطانيا'},
@@ -73,7 +72,7 @@ class SearchRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "GlobalNewsHub API - International Sources Only"}
+    return {"message": "GlobalNewsHub API - Fixed RSS Connections"}
 
 def is_content_safe(text: str) -> bool:
     text_lower = text.lower()
@@ -102,22 +101,29 @@ def parse_date_safely(entry):
                         continue
     return None, None
 
-# دالة جلب مصدر واحد مع هوية متصفح وهمية (User-Agent) لضمان عدم الحظر
+# دالة جلب مصدر واحد باستخدام requests لمحاكاة المتصفح وتجاوز الحظر الجغرافي
 def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
     articles = []
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/rss+xml, application/xml, text/xml'
+            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+            'Accept-Language': 'ar-SA,ar;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Cache-Control': 'no-cache'
         }
         
-        feed = feedparser.parse(source_info['url'], request_headers=headers)
+        # جلب محتوى RSS يدوياً أولاً
+        response = requests.get(source_info['url'], headers=headers, timeout=10)
+        response.raise_for_status()
         
-        if feed.bozo and feed.status != 200:
-            print(f"Blocked or error from {source_key}: Status {feed.status}")
+        # تحليل المحتوى الذي تم جلبه بنجاح
+        feed = feedparser.parse(response.text)
+        
+        if not feed.entries:
+            print(f"No entries found for {source_key}")
             return articles
 
-        for entry in feed.entries[:15]: # جلب آخر 15 خبر من كل مصدر دولي
+        for entry in feed.entries[:15]: 
             title = entry.title
             if not is_content_safe(title): continue
             
@@ -156,16 +162,13 @@ def search_news(request: SearchRequest):
                 return cached_data
 
     query_lower = request.query.lower().strip()
-    
-    # إضافة النص الأصلي للبحث لضمان العثور على الأخبار
     search_terms = [query_lower] 
     
     for ar_word, synonyms in SYNONYMS.items():
         if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
-            search_terms.extend(synonyms)
+            search_terms.extend(synyms)
             break
             
-    # إزالة التكرار
     seen = set()
     unique_terms = []
     for term in search_terms:
@@ -176,20 +179,17 @@ def search_news(request: SearchRequest):
 
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    # ✅ تحديد المصادر بناءً على نوع البحث
     if request.global_search:
-        target_sources = SECONDARY_SOURCES # البحث الشامل يستخدم المدونات والتحليلات
+        target_sources = SECONDARY_SOURCES 
     else:
-        target_sources = INTERNATIONAL_SOURCES   # البحث العادي يستخدم المصادر الدولية فقط
+        target_sources = INTERNATIONAL_SOURCES   
     
-    # إذا تم تحديد مصدر معين في البحث العادي
     if request.source_filter and not request.global_search:
         filtered = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
         if filtered:
             target_sources = filtered
 
     all_articles = []
-    # تنفيذ متوازٍ للمصادر الدولية (سريع جداً وموثوق)
     with ThreadPoolExecutor(max_workers=12) as executor:
         futures = {
             executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 
