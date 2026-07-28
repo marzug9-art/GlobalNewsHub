@@ -5,24 +5,23 @@ import './App.css';
 
 const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
-// بيانات الصحف العربية والخليجية (للروابط المباشرة فقط)
 const ARABIC_NEWSPAPERS = {
   '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com' },
-  '🇸 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
-  ' الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
-  '🇬 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
-  '🇫 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
-  '🇩 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
-  '🇷 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
-  '🇹🇷 تركيا': { 'الأناضول': 'https://www.aa.com.tr/ar' }
+  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
+  '🇦🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
+  '🇬🇧 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
+  '🇷 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
+  '🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
+  '🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
+  '🇹 تركيا': { 'الأناضول': 'https://www.aa.com.tr/ar' }
 };
 
 const GULF_NEWSPAPERS = {
-  '🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
-  '🇦 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae', 'الاتحاد': 'https://www.alittihad.ae' },
+  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
+  '🇦🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae', 'الاتحاد': 'https://www.alittihad.ae' },
   '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com', 'الراية': 'https://raya.com' },
   '🇰🇼 الكويت': { 'القبس': 'https://alqabas.com', 'الرأي': 'https://www.alraimedia.com', 'الأنباء': 'https://www.alanba.com.kw', 'الجريدة': 'https://www.aljarida.com' },
-  '🇧 البحرين': { 'أخبار الخليج': 'https://www.akhbar-alkhaleej.com', 'الوسط': 'https://www.alwasatnews.com' },
+  '🇧🇭 البحرين': { 'أخبار الخليج': 'https://www.akhbar-alkhaleej.com', 'الوسط': 'https://www.alwasatnews.com' },
   '🇴 عمان': { 'عمان': 'https://www.omandaily.om', 'الرؤية': 'https://www.alroya.om', 'الشبيبة': 'https://www.alshabiba.com' }
 };
 
@@ -73,14 +72,17 @@ function App() {
     setGlobalQuery('');
   };
 
+  // ✅ الدالة المصححة - يتم تصفير جميع الحالات عند بدء البحث
   const searchNews = async (isGlobalSearch = false) => {
     const currentQuery = isGlobalSearch ? globalQuery : query;
     if (!currentQuery.trim() && !showBreakingOnly) return;
     
+    // تصفير جميع الحالات قبل بدء البحث الجديد
     setLoading(true);
     setError('');
     setNoResultsMessage('');
     setArticles([]);
+    setSearchCount(0); // ✅ هذا هو الإصلاح الرئيسي
     
     checkGulfAlerts(currentQuery);
 
@@ -90,7 +92,8 @@ function App() {
         language: 'ar',
         source_filter: isGlobalSearch ? '' : sourceFilter,
         max_days: maxDays,
-        global_search: isGlobalSearch // هذا المتغير يفصل المصادر في الخادم
+        global_search: isGlobalSearch,
+        include_blogs: isGlobalSearch 
       });
       
       let results = response.data.articles || [];
@@ -113,7 +116,7 @@ function App() {
     const lowerText = text.toLowerCase();
     for (const [country, keywords] of Object.entries(GULF_ALERT_KEYWORDS)) {
       if (keywords.some(kw => lowerText.includes(kw))) {
-        setGulfAlert({ country, message: ` تنبيه عاجل: تم رصد حدث يتعلق بـ ${country}` });
+        setGulfAlert({ country, message: `🔔 تنبيه عاجل: تم رصد حدث يتعلق بـ ${country}` });
         setTimeout(() => setGulfAlert(null), 8000);
         break;
       }
@@ -126,7 +129,7 @@ function App() {
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong> المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
+          <p><strong>📰 المصدر:</strong> ${article.source} | <strong> الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;"><h3>ملخص الخبر:</h3><p>${article.summary}</p></div>
@@ -154,7 +157,7 @@ function App() {
       <div className="article-actions">
         <button onClick={() => saveAsPDF(article)} className="action-btn pdf"> حفظ PDF</button>
         <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
-        <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more"> اقرأ الأصل</a>
+        <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">📖 اقرأ الأصل</a>
       </div>
     </div>
   );
@@ -163,7 +166,7 @@ function App() {
     <div className="App" dir="rtl">
       <div className="breaking-news-container">
         <button className={`breaking-btn ${showBreakingOnly ? 'active' : ''}`} onClick={() => { setShowBreakingOnly(!showBreakingOnly); if (!showBreakingOnly) setQuery(''); }}>
-           عرض الأخبار العاجلة فقط
+          🚨 عرض الأخبار العاجلة فقط
         </button>
       </div>
 
@@ -198,7 +201,6 @@ function App() {
         />
         
         <div className="search-controls" ref={menuRef}>
-          
           <button onClick={() => searchNews(false)} disabled={loading || showBreakingOnly}>
             {loading ? 'جاري...' : 'بحث'}
           </button>
@@ -219,7 +221,7 @@ function App() {
 
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'arabic' ? null : 'arabic')}>
-               📰 الصحف العربية {activeMenu === 'arabic' ? '▲' : '▼'}
+              📰 الصحف العربية {activeMenu === 'arabic' ? '▲' : '▼'}
             </button>
             {activeMenu === 'arabic' && (
               <div className="dropdown-menu slide-up wide-menu">
@@ -238,7 +240,7 @@ function App() {
 
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'gulf' ? null : 'gulf')}>
-              ️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
+              🏛️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
             </button>
             {activeMenu === 'gulf' && (
               <div className="dropdown-menu slide-up wide-menu">
@@ -256,7 +258,7 @@ function App() {
           </div>
 
           <button className="filter-select global-search-btn" onClick={() => setShowGlobalSearchModal(true)}>
-             بحث شامل (Google Style)
+            🌐 بحث شامل (Google Style)
           </button>
 
           <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
