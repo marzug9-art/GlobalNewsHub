@@ -8,25 +8,24 @@ const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 // بيانات الصحف العربية والخليجية
 const ARABIC_NEWSPAPERS = {
   '🇶🇦 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com', 'العرب': 'https://alarab.co.uk' },
-  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
-  '🇦🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
-  '🇬🇧 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
+  '🇸 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
+  '🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
+  '🇧 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
   '🇫🇷 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
-  '🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
-  '🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
+  '🇩🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
+  '🇷🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
   '🇹🇷 تركيا': { 'الأناضول': 'https://www.aa.com.tr/ar' }
 };
 
 const GULF_NEWSPAPERS = {
-  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
-  '🇦🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae', 'الاتحاد': 'https://www.alittihad.ae' },
+  '🇸 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
+  '🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae', 'الاتحاد': 'https://www.alittihad.ae' },
   '🇶🇦 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com', 'الراية': 'https://raya.com' },
-  '🇰🇼 الكويت': { 'القبس': 'https://alqabas.com', 'الرأي': 'https://www.alraimedia.com', 'الأنباء': 'https://www.alanba.com.kw', 'الجريدة': 'https://www.aljarida.com' },
-  '🇭 البحرين': { 'أخبار الخليج': 'https://www.akhbar-alkhaleej.com', 'الوسط': 'https://www.alwasatnews.com' },
-  '🇴 عمان': { 'عمان': 'https://www.omandaily.om', 'الرؤية': 'https://www.alroya.om', 'الشبيبة': 'https://www.alshabiba.com' }
+  '🇰 الكويت': { 'القبس': 'https://alqabas.com', 'الرأي': 'https://www.alraimedia.com', 'الأنباء': 'https://www.alanba.com.kw', 'الجريدة': 'https://www.aljarida.com' },
+  '🇧🇭 البحرين': { 'أخبار الخليج': 'https://www.akhbar-alkhaleej.com', 'الوسط': 'https://www.alwasatnews.com' },
+  '🇴🇲 عمان': { 'عمان': 'https://www.omandaily.om', 'الرؤية': 'https://www.alroya.om', 'الشبيبة': 'https://www.alshabiba.com' }
 };
 
-// كلمات مفتاحية للتنبيهات الخليجية
 const GULF_ALERT_KEYWORDS = {
   'السعودية': ['السعودية', 'riyadh', 'vision 2030', 'neom', 'ولي العهد'],
   'الإمارات': ['الإمارات', 'dubai', 'abu dhabi', 'expo'],
@@ -50,9 +49,13 @@ function App() {
   
   const [activeMenu, setActiveMenu] = useState(null);
   const [gulfAlert, setGulfAlert] = useState(null);
+  
+  // حالات النافذة المنبثقة للبحث الشامل
+  const [showGlobalSearchModal, setShowGlobalSearchModal] = useState(false);
+  const [globalQuery, setGlobalQuery] = useState('');
+  
   const menuRef = useRef(null);
 
-  // إغلاق القوائم عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -63,26 +66,26 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // دالة البحث المحسنة
+  // دالة البحث الموحدة (تعمل للبحث العادي والشامل)
   const searchNews = async (isGlobalSearch = false) => {
-    if (!query.trim() && !showBreakingOnly) return;
+    const currentQuery = isGlobalSearch ? globalQuery : query;
+    if (!currentQuery.trim() && !showBreakingOnly) return;
     
     setLoading(true);
     setError('');
     setNoResultsMessage('');
     setArticles([]);
     
-    // التحقق من التنبيهات الخليجية
-    checkGulfAlerts(query);
+    checkGulfAlerts(currentQuery);
 
     try {
-      // 1. البحث الأساسي في المصادر الرئيسية
       const response = await axios.post(API_URL, {
-        query: showBreakingOnly ? 'عاجل breaking' : query,
+        query: showBreakingOnly ? 'عاجل breaking' : currentQuery,
         language: 'ar',
         source_filter: isGlobalSearch ? '' : sourceFilter,
         max_days: maxDays,
-        global_search: isGlobalSearch
+        global_search: isGlobalSearch,
+        include_blogs: isGlobalSearch 
       });
       
       let results = response.data.articles || [];
@@ -92,26 +95,7 @@ function App() {
         setArticles(results);
         setSearchCount(results.length);
       } else {
-        // 2. إذا لم توجد نتائج، البحث في المدونات والمصادر الثانوية
-        if (!isGlobalSearch && !showBreakingOnly) {
-          const fallbackResponse = await axios.post(API_URL, {
-            query: query,
-            language: 'ar',
-            max_days: 7,
-            include_blogs: true 
-          });
-          
-          const fallbackResults = fallbackResponse.data.articles || [];
-          if (fallbackResults.length > 0) {
-            setArticles(fallbackResults);
-            setSearchCount(fallbackResults.length);
-            setNoResultsMessage('لم يتم العثور على نتائج في المصادر الرئيسية، إليك نتائج من مدونات ومقالات موثوقة:');
-          } else {
-            setNoResultsMessage(`لا توجد نتائج للبحث عن "${query}" في المصادر المتاحة حالياً.`);
-          }
-        } else {
-          setNoResultsMessage(`لا توجد نتائج للبحث عن "${query}" في المصادر المتاحة حالياً.`);
-        }
+        setNoResultsMessage(`لا توجد نتائج للبحث عن "${currentQuery}" في المصادر المتاحة حالياً.`);
       }
     } catch (err) {
       setError('حدث خطأ في جلب الأخبار. يرجى المحاولة مرة أخرى.');
@@ -137,7 +121,7 @@ function App() {
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong> المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
+          <p><strong>📰 المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;"><h3>ملخص الخبر:</h3><p>${article.summary}</p></div>
@@ -152,17 +136,38 @@ function App() {
   const copyLink = (link) => navigator.clipboard.writeText(link).then(() => alert('تم نسخ الرابط بنجاح!'));
   const openNewspaper = (url) => { window.open(url, '_blank'); setActiveMenu(null); };
 
+  // مكون عرض البطاقات لتجنب التكرار
+  const renderArticleCard = (article) => (
+    <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
+      {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
+      <h3>{article.title}</h3>
+      <p className="article-summary">{article.summary}</p>
+      <div className="article-meta">
+        <span className="source">📰 {article.source} ({article.country})</span>
+        <span className="date"> {article.published}</span>
+        <span className={`credibility credibility-${article.credibility > 90 ? 'high' : article.credibility > 80 ? 'medium' : 'low'}`}>✅ مصداقية: {article.credibility}%</span>
+      </div>
+      <div className="article-actions">
+        <button onClick={() => saveAsPDF(article)} className="action-btn pdf"> حفظ PDF</button>
+        <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
+        <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">📖 اقرأ الأصل</a>
+      </div>
+    </div>
+  );
+
   return (
     <div className="App" dir="rtl">
+      {/* زر الأخبار العاجلة */}
       <div className="breaking-news-container">
         <button className={`breaking-btn ${showBreakingOnly ? 'active' : ''}`} onClick={() => { setShowBreakingOnly(!showBreakingOnly); if (!showBreakingOnly) setQuery(''); }}>
           🚨 عرض الأخبار العاجلة فقط
         </button>
       </div>
 
+      {/* التنبيه الخليجي */}
       {gulfAlert && (
         <div className="gulf-alert-banner">
-          <span className="alert-icon">🔔</span>
+          <span>🔔</span>
           <span>{gulfAlert.message}</span>
           <button onClick={() => setGulfAlert(null)} className="close-alert">×</button>
         </div>
@@ -176,7 +181,7 @@ function App() {
       <div className="search-container">
         {showBreakingOnly && (
           <div className="breaking-mode-notice">
-            <p> جاري عرض الأخبار العاجلة فقط</p>
+            <p>🚨 جاري عرض الأخبار العاجلة فقط</p>
             <button onClick={() => setShowBreakingOnly(false)}>عرض جميع الأخبار</button>
           </div>
         )}
@@ -186,7 +191,7 @@ function App() {
           placeholder="ابحث عن خبر... (مثال: ايران, الكويت, أمريكا)" 
           value={query} 
           onChange={(e) => setQuery(e.target.value)} 
-          onKeyPress={(e) => e.key === 'Enter' && searchNews()} 
+          onKeyPress={(e) => e.key === 'Enter' && searchNews(false)} 
           disabled={showBreakingOnly} 
         />
         
@@ -200,15 +205,16 @@ function App() {
           </button>
 
           <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'arabic' ? null : 'arabic')}>
-            📰 الصحف العربية {activeMenu === 'arabic' ? '▲' : '▼'}
+             الصحف العربية {activeMenu === 'arabic' ? '▲' : '▼'}
           </button>
 
           <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'gulf' ? null : 'gulf')}>
             🏛️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
           </button>
 
-          <button className="filter-select global-search-btn" onClick={() => { searchNews(true); }}>
-             بحث شامل (Google Style)
+          {/* زر فتح النافذة المنبثقة للبحث الشامل */}
+          <button className="filter-select global-search-btn" onClick={() => setShowGlobalSearchModal(true)}>
+            🌐 بحث شامل (Google Style)
           </button>
 
           <select value={maxDays} onChange={(e) => setMaxDays(Number(e.target.value))} className="filter-select">
@@ -218,7 +224,7 @@ function App() {
           </select>
         </div>
 
-        {/* القوائم المنسدلة مع حركة الستارة */}
+        {/* القوائم المنسدلة */}
         {activeMenu === 'sources' && (
           <div className="dropdown-menu slide-up">
             <div className="dropdown-header">مصادر للبحث</div>
@@ -275,27 +281,43 @@ function App() {
       )}
 
       <div className="articles-grid">
-        {articles.map((article) => (
-          <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
-            {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
-            <h3>{article.title}</h3>
-            <p className="article-summary">{article.summary}</p>
-            <div className="article-meta">
-              <span className="source">📰 {article.source} ({article.country})</span>
-              <span className="date">📅 {article.published}</span>
-              <span className={`credibility credibility-${article.credibility > 90 ? 'high' : article.credibility > 80 ? 'medium' : 'low'}`}>✅ مصداقية: {article.credibility}%</span>
-            </div>
-            <div className="article-actions">
-              <button onClick={() => saveAsPDF(article)} className="action-btn pdf">📄 حفظ PDF</button>
-              <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
-              <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">📖 اقرأ الأصل</a>
-            </div>
-          </div>
-        ))}
+        {articles.map(renderArticleCard)}
       </div>
 
+      {/* ===== النافذة المنبثقة للبحث الشامل ===== */}
+      {showGlobalSearchModal && (
+        <div className="global-search-modal" onClick={(e) => e.target.className === 'global-search-modal' && setShowGlobalSearchModal(false)}>
+          <div className="modal-content">
+            <button className="close-modal" onClick={() => setShowGlobalSearchModal(false)}>×</button>
+            
+            <h2>🌍 البحث الشامل</h2>
+            <p>ابحث في جميع المصادر، المدونات، والمقالات التحليلية...</p>
+            
+            <input 
+              type="text" 
+              placeholder="اكتب ما تبحث عنه هنا..." 
+              value={globalQuery}
+              onChange={(e) => setGlobalQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchNews(true)} 
+              autoFocus
+            />
+            
+            <button className="modal-search-btn" onClick={() => searchNews(true)} disabled={loading}>
+              {loading ? 'جاري البحث الشامل...' : 'ابدأ البحث الشامل'}
+            </button>
+
+            {/* عرض نتائج البحث الشامل داخل النافذة */}
+            {articles.length > 0 && (
+              <div className="modal-results-grid">
+                {articles.map(renderArticleCard)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <footer className="legal-footer">
-        <p>⚠️ <strong>تنويه قانوني:</strong> يلتزم GlobalNewsHub بفلترة المحتوى المشبوه وغير الأخلاقي لضمان بيئة آمنة.</p>
+        <p>️ <strong>تنويه قانوني:</strong> يلتزم GlobalNewsHub بفلترة المحتوى المشبوه وغير الأخلاقي لضمان بيئة آمنة.</p>
         <p>© 2026 GlobalNewsHub - جميع الحقوق محفوظة</p>
       </footer>
     </div>
