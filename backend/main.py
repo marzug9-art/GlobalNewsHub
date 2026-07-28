@@ -23,11 +23,11 @@ app.add_middleware(
 
 CACHE = {}
 CACHE_LOCK = threading.Lock()
-CACHE_DURATION = 60 * 5
+CACHE_DURATION = 60 * 5 # حفظ النتائج لمدة 5 دقائق
 
 BLOCKED_KEYWORDS = ['sex', 'porn', 'xxx', 'nude', 'إباحي', 'جنس', 'عري', 'فاحش', 'مخدرات', 'drugs']
 
-# قاموس المرادفات - تم تحسينه ليشمل النصوص العربية الأصلية
+# قاموس المرادفات المحسن
 SYNONYMS = {
     'ايران': ['ايران', 'إيران', 'أيران', 'iran', 'persia'],
     'الكويت': ['الكويت', 'kuwait'],
@@ -40,29 +40,23 @@ SYNONYMS = {
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
 
-NEWS_SOURCES = {
+# ✅ مصادر البحث العادي (فقط المصادر السريعة والموثوقة جداً - 12 مصدراً)
+PRIMARY_SOURCES = {
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
     'skynewsarabia': {'name': 'Sky News Arabia', 'url': 'https://www.skynewsarabia.com/rss', 'credibility': 84, 'country': 'UAE'},
     'bbc_arabic': {'name': 'BBC عربي', 'url': 'https://feeds.bbci.co.uk/arabic/rss.xml', 'credibility': 93, 'country': 'بريطانيا'},
     'cnn': {'name': 'CNN', 'url': 'http://rss.cnn.com/rss/edition_world.rss', 'credibility': 90, 'country': 'أمريكا'},
     'reuters': {'name': 'Reuters', 'url': 'https://www.reutersagency.com/feed/', 'credibility': 96, 'country': 'عالمي'},
-    'theguardian': {'name': 'The Guardian', 'url': 'https://www.theguardian.com/world/rss', 'credibility': 92, 'country': 'بريطانيا'},
-    'nytimes': {'name': 'New York Times', 'url': 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', 'credibility': 93, 'country': 'أمريكا'},
     'rt_arabic': {'name': 'RT عربي', 'url': 'https://arabic.rt.com/rss', 'credibility': 78, 'country': 'روسيا'},
     'dw_arabic': {'name': 'DW عربي', 'url': 'https://rss.dw.com/xml/rss/ar-all', 'credibility': 90, 'country': 'ألمانيا'},
     'france24_arabic': {'name': 'فرانس 24 عربي', 'url': 'http://www.france24.com/ar/rss.xml', 'credibility': 88, 'country': 'فرنسا'},
     'okaz': {'name': 'عكاظ', 'url': 'https://www.okaz.com.sa/rss', 'credibility': 83, 'country': 'السعودية'},
     'alkhaleej': {'name': 'الخليج', 'url': 'https://www.alkhaleej.ae/rss', 'credibility': 84, 'country': 'الإمارات'},
-    'albayan': {'name': 'البيان', 'url': 'https://www.albayan.ae/rss', 'credibility': 83, 'country': 'الإمارات'},
     'alqabas': {'name': 'القبس', 'url': 'https://alqabas.com/feed', 'credibility': 81, 'country': 'الكويت'},
-    'omandaily': {'name': 'عمان', 'url': 'https://www.omandaily.om/rss', 'credibility': 80, 'country': 'عمان'},
-    'akhbar_alkhaleej': {'name': 'أخبار الخليج', 'url': 'https://www.akhbar-alkhaleej.com/feed', 'credibility': 80, 'country': 'البحرين'},
-    'aljazeera_en': {'name': 'Al Jazeera English', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 88, 'country': 'قطر'},
-    'apnews': {'name': 'AP News', 'url': 'https://apnews.com/apf-topnews.rss', 'credibility': 97, 'country': 'أمريكا'},
-    'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
 }
 
+# ✅ مصادر البحث الشامل (مدونات + تحليلات + مصادر إضافية - 9 مصادر)
 SECONDARY_SOURCES = {
     'gulf_economy': {'name': 'الخليج الاقتصادي', 'url': 'https://gulf-economy.com/feed/', 'credibility': 82, 'country': 'خليجي'},
     'vision_uae': {'name': 'رؤية الإمارات', 'url': 'https://vision2030.ae/feed/', 'credibility': 85, 'country': 'الإمارات'},
@@ -81,11 +75,10 @@ class SearchRequest(BaseModel):
     source_filter: Optional[str] = None
     max_days: Optional[int] = 3
     global_search: Optional[bool] = False
-    include_blogs: Optional[bool] = False
 
 @app.get("/")
 def root():
-    return {"message": "GlobalNewsHub API - Optimized for Speed"}
+    return {"message": "GlobalNewsHub API - Optimized & Separated Sources"}
 
 def is_content_safe(text: str) -> bool:
     text_lower = text.lower()
@@ -118,7 +111,7 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
     articles = []
     try:
         feed = feedparser.parse(source_info['url'])
-        for entry in feed.entries[:10]:
+        for entry in feed.entries[:10]: # جلب آخر 10 أخبار فقط من كل مصدر للسرعة
             title = entry.title
             if not is_content_safe(title): continue
             
@@ -134,8 +127,6 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
             if published_dt < cutoff_date: continue
             
             searchable_text = f"{title} {summary}".lower()
-            
-            # التحقق من مطابقة أي من مصطلحات البحث (الأصلية والمرادفات)
             if any(term in searchable_text for term in search_terms):
                 articles.append({
                     'id': hashlib.md5(f"{source_key}{entry.link}".encode()).hexdigest(),
@@ -164,12 +155,11 @@ def search_news(request: SearchRequest):
     search_terms = [query_lower] 
     
     for ar_word, synonyms in SYNONYMS.items():
-        # إذا كان النص المدخل مطابقاً لمفتاح المرادفات أو أحد مرادفاتها
         if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
             search_terms.extend(synonyms)
             break
             
-    # إزالة التكرار مع الحفاظ على الترتيب
+    # إزالة التكرار
     seen = set()
     unique_terms = []
     for term in search_terms:
@@ -180,15 +170,21 @@ def search_news(request: SearchRequest):
 
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    target_sources = NEWS_SOURCES
-    if request.global_search or request.include_blogs:
-        target_sources = {**NEWS_SOURCES, **SECONDARY_SOURCES}
+    # ✅ الفصل التام للمصادر بناءً على نوع البحث
+    if request.global_search:
+        target_sources = SECONDARY_SOURCES # البحث الشامل يستخدم المدونات والتحليلات فقط
+    else:
+        target_sources = PRIMARY_SOURCES   # البحث العادي يستخدم المصادر الإخبارية السريعة فقط
     
+    # إذا تم تحديد مصدر معين في البحث العادي
     if request.source_filter and not request.global_search:
-        target_sources = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
+        filtered = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
+        if filtered:
+            target_sources = filtered
 
     all_articles = []
-    with ThreadPoolExecutor(max_workers=15) as executor:
+    # تنفيذ متوازٍ لـ 12 مصدراً كحد أقصى (سريع جداً)
+    with ThreadPoolExecutor(max_workers=12) as executor:
         futures = {
             executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 
             for key, info in target_sources.items()
