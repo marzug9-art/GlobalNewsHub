@@ -6,13 +6,13 @@ import './App.css';
 const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
 const ARABIC_NEWSPAPERS = {
-  '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com' },
+  ' قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com' },
   '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
   '🇦🇪 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
   '🇬🇧 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
   '🇷 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
   '🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
-  '🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
+  '🇷🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
   '🇹 تركيا': { 'الأناضول': 'https://www.aa.com.tr/ar' }
 };
 
@@ -25,14 +25,7 @@ const GULF_NEWSPAPERS = {
   '🇴 عمان': { 'عمان': 'https://www.omandaily.om', 'الرؤية': 'https://www.alroya.om', 'الشبيبة': 'https://www.alshabiba.com' }
 };
 
-const GULF_ALERT_KEYWORDS = {
-  'السعودية': ['السعودية', 'riyadh', 'vision 2030', 'neom', 'ولي العهد'],
-  'الإمارات': ['الإمارات', 'dubai', 'abu dhabi', 'expo'],
-  'الكويت': ['الكويت', 'kuwait city', 'مجلس الأمة'],
-  'قطر': ['قطر', 'qatar', 'الدوحة'],
-  'البحرين': ['البحرين', 'bahrain', 'المنامة'],
-  'عمان': ['عمان', 'oman', 'مسقط', 'سلطنة عمان']
-};
+// ✅ تم إزالة GULF_ALERT_KEYWORDS - التنبيه الآن يعتمد على الأخبار الحقيقية فقط
 
 function App() {
   const [query, setQuery] = useState('');
@@ -47,7 +40,7 @@ function App() {
   const [showBreakingOnly, setShowBreakingOnly] = useState(false);
   
   const [activeMenu, setActiveMenu] = useState(null);
-  const [gulfAlert, setGulfAlert] = useState(null);
+  const [gulfAlert, setGulfAlert] = useState(null); // تنبيه الأخبار العاجلة الحقيقية
   
   const [showGlobalSearchModal, setShowGlobalSearchModal] = useState(false);
   const [globalQuery, setGlobalQuery] = useState('');
@@ -72,19 +65,20 @@ function App() {
     setGlobalQuery('');
   };
 
-  // ✅ الدالة المصححة - يتم تصفير جميع الحالات عند بدء البحث
+  // ✅ الدالة المصححة - التنبيه يعتمد على الأخبار العاجلة الحقيقية فقط
   const searchNews = async (isGlobalSearch = false) => {
     const currentQuery = isGlobalSearch ? globalQuery : query;
     if (!currentQuery.trim() && !showBreakingOnly) return;
     
-    // تصفير جميع الحالات قبل بدء البحث الجديد
-    setLoading(true);
-    setError('');
-    setNoResultsMessage('');
+    // تصفير جميع الحالات
     setArticles([]);
-    setSearchCount(0); // ✅ هذا هو الإصلاح الرئيسي
+    setSearchCount(0);
+    setNoResultsMessage('');
+    setError('');
+    setGulfAlert(null); // ✅ إزالة التنبيه السابق
+    setLoading(true);
     
-    checkGulfAlerts(currentQuery);
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
       const response = await axios.post(API_URL, {
@@ -92,8 +86,7 @@ function App() {
         language: 'ar',
         source_filter: isGlobalSearch ? '' : sourceFilter,
         max_days: maxDays,
-        global_search: isGlobalSearch,
-        include_blogs: isGlobalSearch 
+        global_search: isGlobalSearch
       });
       
       let results = response.data.articles || [];
@@ -102,6 +95,17 @@ function App() {
       if (results.length > 0) {
         setArticles(results);
         setSearchCount(results.length);
+        
+        // ✅ التنبيه يظهر فقط إذا كانت هناك أخبار عاجلة حقيقية
+        const breakingNews = results.filter(art => art.is_breaking);
+        if (breakingNews.length > 0) {
+          const countries = [...new Set(breakingNews.map(art => art.country))];
+          setGulfAlert({
+            message: ` تم العثور على ${breakingNews.length} خبر عاجل من: ${countries.join('، ')}`,
+            breakingCount: breakingNews.length
+          });
+          setTimeout(() => setGulfAlert(null), 10000);
+        }
       } else {
         setNoResultsMessage(`لا توجد نتائج للبحث عن "${currentQuery}" في المصادر المتاحة حالياً.`);
       }
@@ -112,24 +116,13 @@ function App() {
     }
   };
 
-  const checkGulfAlerts = (text) => {
-    const lowerText = text.toLowerCase();
-    for (const [country, keywords] of Object.entries(GULF_ALERT_KEYWORDS)) {
-      if (keywords.some(kw => lowerText.includes(kw))) {
-        setGulfAlert({ country, message: `🔔 تنبيه عاجل: تم رصد حدث يتعلق بـ ${country}` });
-        setTimeout(() => setGulfAlert(null), 8000);
-        break;
-      }
-    }
-  };
-
   const saveAsPDF = (article) => {
     const element = document.createElement('div');
     element.innerHTML = `
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>📰 المصدر:</strong> ${article.source} | <strong> الدولة:</strong> ${article.country}</p>
+          <p><strong> المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;"><h3>ملخص الخبر:</h3><p>${article.summary}</p></div>
@@ -146,16 +139,16 @@ function App() {
 
   const renderArticleCard = (article) => (
     <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
-      {article.is_breaking && <span className="breaking-badge"> عاجل</span>}
+      {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
       <h3>{article.title}</h3>
       <p className="article-summary">{article.summary}</p>
       <div className="article-meta">
         <span className="source">📰 {article.source} ({article.country})</span>
-        <span className="date"> {article.published}</span>
+        <span className="date">📅 {article.published}</span>
         <span className={`credibility credibility-${article.credibility > 90 ? 'high' : article.credibility > 80 ? 'medium' : 'low'}`}>✅ مصداقية: {article.credibility}%</span>
       </div>
       <div className="article-actions">
-        <button onClick={() => saveAsPDF(article)} className="action-btn pdf"> حفظ PDF</button>
+        <button onClick={() => saveAsPDF(article)} className="action-btn pdf">📄 حفظ PDF</button>
         <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
         <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more">📖 اقرأ الأصل</a>
       </div>
@@ -165,14 +158,21 @@ function App() {
   return (
     <div className="App" dir="rtl">
       <div className="breaking-news-container">
-        <button className={`breaking-btn ${showBreakingOnly ? 'active' : ''}`} onClick={() => { setShowBreakingOnly(!showBreakingOnly); if (!showBreakingOnly) setQuery(''); }}>
+        <button className={`breaking-btn ${showBreakingOnly ? 'active' : ''}`} onClick={() => { 
+          setShowBreakingOnly(!showBreakingOnly); 
+          if (!showBreakingOnly) setQuery(''); 
+          setArticles([]);
+          setSearchCount(0);
+          setNoResultsMessage('');
+        }}>
           🚨 عرض الأخبار العاجلة فقط
         </button>
       </div>
 
+      {/* ✅ التنبيه يظهر فقط عند وجود أخبار عاجلة حقيقية */}
       {gulfAlert && (
         <div className="gulf-alert-banner">
-          <span></span>
+          <span>🚨</span>
           <span>{gulfAlert.message}</span>
           <button onClick={() => setGulfAlert(null)} className="close-alert">×</button>
         </div>
@@ -186,7 +186,7 @@ function App() {
       <div className="search-container">
         {showBreakingOnly && (
           <div className="breaking-mode-notice">
-            <p>🚨 جاري عرض الأخبار العاجلة فقط</p>
+            <p> جاري عرض الأخبار العاجلة فقط</p>
             <button onClick={() => setShowBreakingOnly(false)}>عرض جميع الأخبار</button>
           </div>
         )}
