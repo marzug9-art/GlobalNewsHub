@@ -24,7 +24,7 @@ app.add_middleware(
 # ===== إعدادات التسريع والذاكرة المؤقتة =====
 CACHE = {}
 CACHE_LOCK = threading.Lock()
-CACHE_DURATION = 60 * 5 # حفظ النتائج لمدة 5 دقائق
+CACHE_DURATION = 60 * 5
 
 BLOCKED_KEYWORDS = ['sex', 'porn', 'xxx', 'nude', 'إباحي', 'جنس', 'عري', 'فاحش', 'مخدرات', 'drugs']
 
@@ -40,7 +40,6 @@ SYNONYMS = {
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
 
-# المصادر الإخبارية الرئيسية (سريعة وموثوقة)
 NEWS_SOURCES = {
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
@@ -64,16 +63,17 @@ NEWS_SOURCES = {
     'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
 }
 
-# المدونات والمقالات التحليلية الموثوقة (Secondary Sources)
+# مصادر البحث الشامل (مدونات خليجية + تحليلية)
 SECONDARY_SOURCES = {
-    'middleeasteye': {'name': 'Middle East Eye', 'url': 'https://www.middleeasteye.net/rss', 'credibility': 82, 'country': 'عالمي'},
-    'almonitor': {'name': 'Al-Monitor', 'url': 'https://www.al-monitor.com/rss', 'credibility': 85, 'country': 'عالمي'},
-    'foreignpolicy': {'name': 'Foreign Policy', 'url': 'https://foreignpolicy.com/feed/', 'credibility': 90, 'country': 'أمريكا'},
-    'theglobeandmail': {'name': 'The Globe and Mail', 'url': 'https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/?outputType=xml', 'credibility': 88, 'country': 'كندا'},
-    'scmp': {'name': 'South China Morning Post', 'url': 'https://www.scmp.com/rss/322209/feed', 'credibility': 87, 'country': 'هونغ كونغ'},
-    'trtworld': {'name': 'TRT World', 'url': 'https://www.trtworld.com/rss', 'credibility': 79, 'country': 'تركيا'},
-    'africanews': {'name': 'Africanews', 'url': 'https://www.africanews.com/feed/', 'credibility': 80, 'country': 'أفريقيا'},
-    'asiatimes': {'name': 'Asia Times', 'url': 'https://asiatimes.com/feed/', 'credibility': 83, 'country': 'آسيا'},
+    'gulf_economy': {'name': 'الخليج الاقتصادي', 'url': 'https://gulf-economy.com/feed/', 'credibility': 82, 'country': 'خليجي'},
+    'vision_uae': {'name': 'رؤية الإمارات', 'url': 'https://vision2030.ae/feed/', 'credibility': 85, 'country': 'الإمارات'},
+    'kuwait_digital': {'name': 'الكويت الرقمية', 'url': 'https://kuwait-digital.com/feed/', 'credibility': 78, 'country': 'الكويت'},
+    'bahrain_today': {'name': 'البحرين اليوم', 'url': 'https://bahrain-today.com/feed/', 'credibility': 79, 'country': 'البحرين'},
+    'oman_future': {'name': 'عمان المستقبل', 'url': 'https://oman-future.com/feed/', 'credibility': 80, 'country': 'عمان'},
+    'al_monitor': {'name': 'Al-Monitor', 'url': 'https://www.al-monitor.com/rss', 'credibility': 88, 'country': 'عالمي'},
+    'middle_east_eye': {'name': 'Middle East Eye', 'url': 'https://www.middleeasteye.net/rss.xml', 'credibility': 85, 'country': 'بريطانيا'},
+    'carnegie_mec': {'name': 'Carnegie MEC', 'url': 'https://carnegie-mec.org/feed/', 'credibility': 92, 'country': 'لبنان'},
+    'voa_arabic': {'name': 'VOA عربي', 'url': 'https://www.voanews.com/api/zr8z-lq4r', 'credibility': 87, 'country': 'أمريكا'},
 }
 
 class SearchRequest(BaseModel):
@@ -86,7 +86,7 @@ class SearchRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "GlobalNewsHub API - Optimized with Blogs & Caching"}
+    return {"message": "GlobalNewsHub API - Optimized for Speed"}
 
 def is_content_safe(text: str) -> bool:
     text_lower = text.lower()
@@ -98,14 +98,10 @@ def clean_html(raw_html: str) -> str:
     return re.sub(r'\s+', ' ', clean_text).strip()[:300] + ('...' if len(clean_text) > 300 else '')
 
 def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
-    """دالة لجلب مصدر واحد فقط بشكل متوازٍ"""
     articles = []
     try:
         feed = feedparser.parse(source_info['url'])
-        # جلب 8 أخبار فقط للمدونات و10 للمصادر الرئيسية لتوفير الوقت
-        limit = 8 if source_key in SECONDARY_SOURCES else 10
-        
-        for entry in feed.entries[:limit]:
+        for entry in feed.entries[:10]:
             title = entry.title
             if not is_content_safe(title): continue
             
@@ -136,8 +132,7 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
 
 @app.post("/api/search")
 def search_news(request: SearchRequest):
-    # 1. التحقق من الذاكرة المؤقتة أولاً
-    cache_key = f"{request.query}_{request.source_filter}_{request.max_days}_{request.global_search}_{request.include_blogs}"
+    cache_key = f"{request.query}_{request.source_filter}_{request.max_days}_{request.global_search}"
     with CACHE_LOCK:
         if cache_key in CACHE:
             cached_time, cached_data = CACHE[cache_key]
@@ -148,29 +143,21 @@ def search_news(request: SearchRequest):
     search_terms = [query_lower]
     for ar_word, synonyms in SYNONYMS.items():
         if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
-            search_terms.extend(synyms)
+            search_terms.extend(synonyms)
             break
     search_terms = list(set(search_terms))
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    # 2. تحديد المصادر المطلوبة (أساسية + ثانوية إذا طلب المستخدم)
-    target_sources = dict(NEWS_SOURCES)
-    
-    # إذا كان البحث الشامل أو تم تفعيل المدونات، نضيف المصادر الثانوية
+    # تحديد المصادر بناءً على نوع البحث
+    target_sources = NEWS_SOURCES
     if request.global_search or request.include_blogs:
-        target_sources.update(SECONDARY_SOURCES)
-        
-    # إذا حدد المستخدم مصدراً معيناً، نفلتر القائمة
-    if request.source_filter:
-        filtered = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
-        if filtered: target_sources = filtered
-
-    # 3. التنفيذ المتوازي (Parallel Execution)
-    all_articles = []
-    # زيادة عدد العمال إلى 15 عند تضمين المدونات
-    max_workers = 15 if (request.global_search or request.include_blogs) else 10
+        target_sources = {**NEWS_SOURCES, **SECONDARY_SOURCES}
     
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    if request.source_filter and not request.global_search:
+        target_sources = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
+
+    all_articles = []
+    with ThreadPoolExecutor(max_workers=15) as executor:
         futures = {
             executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 
             for key, info in target_sources.items()
@@ -178,17 +165,13 @@ def search_news(request: SearchRequest):
         for future in as_completed(futures):
             all_articles.extend(future.result())
 
-    # ترتيب النتائج: عاجل أولاً، ثم الأحدث
     all_articles.sort(key=lambda x: (not x['is_breaking'], x['published']), reverse=True)
     
     response_data = {
-        "status": "success", 
-        "articles": all_articles[:60], # زيادة السقف قليلاً عند دمج المدونات
-        "count": len(all_articles), 
-        "query": request.query
+        "status": "success", "articles": all_articles[:50],
+        "count": len(all_articles), "query": request.query
     }
 
-    # 4. حفظ النتيجة في الذاكرة المؤقتة
     with CACHE_LOCK:
         CACHE[cache_key] = (time.time(), response_data)
 
