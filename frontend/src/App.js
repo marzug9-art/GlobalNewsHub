@@ -5,12 +5,11 @@ import './App.css';
 
 const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
-// بيانات الصحف العربية والخليجية
 const ARABIC_NEWSPAPERS = {
   '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com' },
-  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
-  '🇦 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
-  '🇬🇧 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
+  '🇸 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
+  ' الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
+  '🇬 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
   '🇫🇷 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
   '🇩🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
   '🇷🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
@@ -127,7 +126,7 @@ function App() {
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>📰 المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
+          <p><strong>📰 المصدر:</strong> ${article.source} | <strong> الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;"><h3>ملخص الخبر:</h3><p>${article.summary}</p></div>
@@ -184,7 +183,7 @@ function App() {
       <div className="search-container">
         {showBreakingOnly && (
           <div className="breaking-mode-notice">
-            <p>🚨 جاري عرض الأخبار العاجلة فقط</p>
+            <p> جاري عرض الأخبار العاجلة فقط</p>
             <button onClick={() => setShowBreakingOnly(false)}>عرض جميع الأخبار</button>
           </div>
         )}
@@ -198,14 +197,12 @@ function App() {
           disabled={showBreakingOnly} 
         />
         
-        {/* الحاوية الرئيسية للأزرار */}
         <div className="search-controls" ref={menuRef}>
           
           <button onClick={() => searchNews(false)} disabled={loading || showBreakingOnly}>
             {loading ? 'جاري...' : 'بحث'}
           </button>
 
-          {/* غلاف زر المصادر */}
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'sources' ? null : 'sources')}>
               🔍 المصادر {activeMenu === 'sources' ? '▲' : '▼'}
@@ -220,7 +217,6 @@ function App() {
             )}
           </div>
 
-          {/* غلاف زر الصحف العربية */}
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'arabic' ? null : 'arabic')}>
                📰 الصحف العربية {activeMenu === 'arabic' ? '▲' : '▼'}
@@ -240,7 +236,6 @@ function App() {
             )}
           </div>
 
-          {/* غلاف زر الصحف الخليجية */}
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'gulf' ? null : 'gulf')}>
               ️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
@@ -298,7 +293,7 @@ function App() {
           <div className="modal-content">
             <button className="close-modal" onClick={closeGlobalSearchModal}>×</button>
             
-            <h2>🌍 البحث الشامل</h2>
+            <h2> البحث الشامل</h2>
             <p>ابحث في جميع المصادر، المدونات، والمقالات التحليلية...</p>
             
             <input 
@@ -324,7 +319,7 @@ function App() {
       )}
 
       <footer className="legal-footer">
-        <p>⚠️ <strong>تنويه قانوني:</strong> يلتزم GlobalNewsHub بفلترة المحتوى المشبوه وغير الأخلاقي لضمان بيئة آمنة.</p>
+        <p>️ <strong>تنويه قانوني:</strong> يلتزم GlobalNewsHub بفلترة المحتوى المشبوه وغير الأخلاقي لضمان بيئة آمنة.</p>
         <p>© 2026 GlobalNewsHub - جميع الحقوق محفوظة</p>
       </footer>
     </div>

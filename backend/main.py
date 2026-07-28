@@ -27,14 +27,15 @@ CACHE_DURATION = 60 * 5
 
 BLOCKED_KEYWORDS = ['sex', 'porn', 'xxx', 'nude', 'إباحي', 'جنس', 'عري', 'فاحش', 'مخدرات', 'drugs']
 
+# قاموس المرادفات - تم تحسينه ليشمل النصوص العربية الأصلية
 SYNONYMS = {
     'ايران': ['ايران', 'إيران', 'أيران', 'iran', 'persia'],
     'الكويت': ['الكويت', 'kuwait'],
-    'السعودية': ['السعودية', 'saudi', 'riyadh'],
-    'الإمارات': ['الإمارات', 'uae', 'dubai'],
-    'قطر': ['قطر', 'qatar', 'الدوحة'],
-    'عمان': ['عمان', 'oman', 'مسقط'],
-    'البحرين': ['البحرين', 'bahrain', 'المنامة'],
+    'السعودية': ['السعودية', 'السعوديه', 'saudi', 'riyadh', 'الرياض'],
+    'الإمارات': ['الإمارات', 'الامارات', 'uae', 'dubai', 'دبي'],
+    'قطر': ['قطر', 'qatar', 'الدوحة', 'doha'],
+    'عمان': ['عمان', 'oman', 'مسقط', 'muscat'],
+    'البحرين': ['البحرين', 'bahrain', 'المنامة', 'manama'],
 }
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
@@ -95,7 +96,6 @@ def clean_html(raw_html: str) -> str:
     clean_text = re.sub(r'<[^>]+>', '', raw_html)
     return re.sub(r'\s+', ' ', clean_text).strip()[:300] + ('...' if len(clean_text) > 300 else '')
 
-# دالة معالجة التاريخ المحسنة
 def parse_date_safely(entry):
     date_fields = ['published', 'updated', 'created']
     for field in date_fields:
@@ -105,7 +105,6 @@ def parse_date_safely(entry):
                 dt = parsedate_to_datetime(raw_date)
                 return dt.strftime('%Y-%m-%d %H:%M'), dt
             except Exception:
-                # محاولة ثانية لصيغ تواريخ مختلفة
                 formats = ['%Y-%m-%dT%H:%M:%S%z', '%a, %d %b %Y %H:%M:%S %z', '%Y-%m-%d %H:%M:%S']
                 for fmt in formats:
                     try:
@@ -127,10 +126,7 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
             summary = clean_html(raw_summary)
             if not is_content_safe(summary): continue
             
-            # استخدام دالة التاريخ المحسنة
             published_str, published_dt = parse_date_safely(entry)
-            
-            # إذا فشل استخراج التاريخ، نستخدم تاريخ اليوم كقيمة افتراضية بدلاً من "غير محدد"
             if published_dt is None:
                 published_dt = datetime.now()
                 published_str = published_dt.strftime('%Y-%m-%d %H:%M')
@@ -138,6 +134,8 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
             if published_dt < cutoff_date: continue
             
             searchable_text = f"{title} {summary}".lower()
+            
+            # التحقق من مطابقة أي من مصطلحات البحث (الأصلية والمرادفات)
             if any(term in searchable_text for term in search_terms):
                 articles.append({
                     'id': hashlib.md5(f"{source_key}{entry.link}".encode()).hexdigest(),
@@ -161,12 +159,25 @@ def search_news(request: SearchRequest):
                 return cached_data
 
     query_lower = request.query.lower().strip()
-    search_terms = [query_lower]
+    
+    # إضافة النص الأصلي للبحث لضمان العثور على الأخبار المحلية
+    search_terms = [query_lower] 
+    
     for ar_word, synonyms in SYNONYMS.items():
+        # إذا كان النص المدخل مطابقاً لمفتاح المرادفات أو أحد مرادفاتها
         if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
             search_terms.extend(synonyms)
             break
-    search_terms = list(set(search_terms))
+            
+    # إزالة التكرار مع الحفاظ على الترتيب
+    seen = set()
+    unique_terms = []
+    for term in search_terms:
+        if term not in seen:
+            seen.add(term)
+            unique_terms.append(term)
+    search_terms = unique_terms
+
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
     target_sources = NEWS_SOURCES
