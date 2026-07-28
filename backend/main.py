@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-import requests # سنستخدم requests للحصول على RSS يدوياً لتجاوز الحظر
+import requests # تأكد من إضافتها في requirements.txt
 
 app = FastAPI(title="GlobalNewsHub")
 
@@ -40,7 +40,7 @@ SYNONYMS = {
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
 
-# ✅ مصادر البحث الدولي الموثوقة (تم تحديث الروابط لروابط مفتوحة عالمياً)
+# ✅ مصادر البحث الدولي الموثوقة
 INTERNATIONAL_SOURCES = {
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
@@ -154,58 +154,63 @@ def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
 
 @app.post("/api/search")
 def search_news(request: SearchRequest):
-    cache_key = f"{request.query}_{request.source_filter}_{request.max_days}_{request.global_search}"
-    with CACHE_LOCK:
-        if cache_key in CACHE:
-            cached_time, cached_data = CACHE[cache_key]
-            if time.time() - cached_time < CACHE_DURATION:
-                return cached_data
+    try: # إضافة try-except شاملة للمسار الرئيسي لمنع توقف الخادم
+        cache_key = f"{request.query}_{request.source_filter}_{request.max_days}_{request.global_search}"
+        with CACHE_LOCK:
+            if cache_key in CACHE:
+                cached_time, cached_data = CACHE[cache_key]
+                if time.time() - cached_time < CACHE_DURATION:
+                    return cached_data
 
-    query_lower = request.query.lower().strip()
-    search_terms = [query_lower] 
-    
-    for ar_word, synonyms in SYNONYMS.items():
-        if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
-            search_terms.extend(synyms)
-            break
-            
-    seen = set()
-    unique_terms = []
-    for term in search_terms:
-        if term not in seen:
-            seen.add(term)
-            unique_terms.append(term)
-    search_terms = unique_terms
+        query_lower = request.query.lower().strip()
+        search_terms = [query_lower] 
+        
+        for ar_word, synonyms in SYNONYMS.items():
+            if ar_word in query_lower or any(syn in query_lower for syn in synonyms):
+                search_terms.extend(synonyms)
+                break
+                
+        seen = set()
+        unique_terms = []
+        for term in search_terms:
+            if term not in seen:
+                seen.add(term)
+                unique_terms.append(term)
+        search_terms = unique_terms
 
-    cutoff_date = datetime.now() - timedelta(days=request.max_days)
+        cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    if request.global_search:
-        target_sources = SECONDARY_SOURCES 
-    else:
-        target_sources = INTERNATIONAL_SOURCES   
-    
-    if request.source_filter and not request.global_search:
-        filtered = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
-        if filtered:
-            target_sources = filtered
+        if request.global_search:
+            target_sources = SECONDARY_SOURCES 
+        else:
+            target_sources = INTERNATIONAL_SOURCES   
+        
+        if request.source_filter and not request.global_search:
+            filtered = {k: v for k, v in target_sources.items() if request.source_filter.lower() in v['name'].lower()}
+            if filtered:
+                target_sources = filtered
 
-    all_articles = []
-    with ThreadPoolExecutor(max_workers=12) as executor:
-        futures = {
-            executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 
-            for key, info in target_sources.items()
+        all_articles = []
+        with ThreadPoolExecutor(max_workers=12) as executor:
+            futures = {
+                executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 
+                for key, info in target_sources.items()
+            }
+            for future in as_completed(futures):
+                all_articles.extend(future.result())
+
+        all_articles.sort(key=lambda x: (not x['is_breaking'], x['published']), reverse=True)
+        
+        response_data = {
+            "status": "success", "articles": all_articles[:50],
+            "count": len(all_articles), "query": request.query
         }
-        for future in as_completed(futures):
-            all_articles.extend(future.result())
 
-    all_articles.sort(key=lambda x: (not x['is_breaking'], x['published']), reverse=True)
-    
-    response_data = {
-        "status": "success", "articles": all_articles[:50],
-        "count": len(all_articles), "query": request.query
-    }
+        with CACHE_LOCK:
+            CACHE[cache_key] = (time.time(), response_data)
 
-    with CACHE_LOCK:
-        CACHE[cache_key] = (time.time(), response_data)
-
-    return response_data
+        return response_data
+    except Exception as e:
+        # في حالة حدوث أي خطأ غير متوقع، نعيد رسالة واضحة بدلاً من توقف الخادم
+        print(f"CRITICAL ERROR in search_news: {e}")
+        return {"status": "error", "message": "حدث خطأ داخلي في الخادم، يرجى المحاولة لاحقاً.", "articles": []}
