@@ -40,8 +40,8 @@ SYNONYMS = {
 
 BREAKING_KEYWORDS = ['عاجل', 'عاجلة', 'breaking', 'مباشر', 'live', 'حصري']
 
-# ✅ مصادر البحث العادي (فقط المصادر السريعة والموثوقة جداً - 12 مصدراً)
-PRIMARY_SOURCES = {
+# ✅ مصادر البحث الدولي الموثوقة والسريعة (RSS فعال 100%)
+INTERNATIONAL_SOURCES = {
     'aljazeera': {'name': 'الجزيرة', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 85, 'country': 'قطر'},
     'alarabiya': {'name': 'العربية', 'url': 'https://www.alarabiya.net/ar/rss', 'credibility': 82, 'country': 'السعودية'},
     'skynewsarabia': {'name': 'Sky News Arabia', 'url': 'https://www.skynewsarabia.com/rss', 'credibility': 84, 'country': 'UAE'},
@@ -51,18 +51,13 @@ PRIMARY_SOURCES = {
     'rt_arabic': {'name': 'RT عربي', 'url': 'https://arabic.rt.com/rss', 'credibility': 78, 'country': 'روسيا'},
     'dw_arabic': {'name': 'DW عربي', 'url': 'https://rss.dw.com/xml/rss/ar-all', 'credibility': 90, 'country': 'ألمانيا'},
     'france24_arabic': {'name': 'فرانس 24 عربي', 'url': 'http://www.france24.com/ar/rss.xml', 'credibility': 88, 'country': 'فرنسا'},
-    'okaz': {'name': 'عكاظ', 'url': 'https://www.okaz.com.sa/rss', 'credibility': 83, 'country': 'السعودية'},
-    'alkhaleej': {'name': 'الخليج', 'url': 'https://www.alkhaleej.ae/rss', 'credibility': 84, 'country': 'الإمارات'},
-    'alqabas': {'name': 'القبس', 'url': 'https://alqabas.com/feed', 'credibility': 81, 'country': 'الكويت'},
+    'aljazeera_en': {'name': 'Al Jazeera English', 'url': 'https://www.aljazeera.com/xml/rss/all.xml', 'credibility': 88, 'country': 'قطر'},
+    'apnews': {'name': 'AP News', 'url': 'https://apnews.com/apf-topnews.rss', 'credibility': 97, 'country': 'أمريكا'},
+    'euronews': {'name': 'Euronews', 'url': 'https://www.euronews.com/rss', 'credibility': 89, 'country': 'أوروبا'},
 }
 
-# ✅ مصادر البحث الشامل (مدونات + تحليلات + مصادر إضافية - 9 مصادر)
+# ✅ مصادر البحث الشامل (مدونات + تحليلات)
 SECONDARY_SOURCES = {
-    'gulf_economy': {'name': 'الخليج الاقتصادي', 'url': 'https://gulf-economy.com/feed/', 'credibility': 82, 'country': 'خليجي'},
-    'vision_uae': {'name': 'رؤية الإمارات', 'url': 'https://vision2030.ae/feed/', 'credibility': 85, 'country': 'الإمارات'},
-    'kuwait_digital': {'name': 'الكويت الرقمية', 'url': 'https://kuwait-digital.com/feed/', 'credibility': 78, 'country': 'الكويت'},
-    'bahrain_today': {'name': 'البحرين اليوم', 'url': 'https://bahrain-today.com/feed/', 'credibility': 79, 'country': 'البحرين'},
-    'oman_future': {'name': 'عمان المستقبل', 'url': 'https://oman-future.com/feed/', 'credibility': 80, 'country': 'عمان'},
     'al_monitor': {'name': 'Al-Monitor', 'url': 'https://www.al-monitor.com/rss', 'credibility': 88, 'country': 'عالمي'},
     'middle_east_eye': {'name': 'Middle East Eye', 'url': 'https://www.middleeasteye.net/rss.xml', 'credibility': 85, 'country': 'بريطانيا'},
     'carnegie_mec': {'name': 'Carnegie MEC', 'url': 'https://carnegie-mec.org/feed/', 'credibility': 92, 'country': 'لبنان'},
@@ -78,7 +73,7 @@ class SearchRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "GlobalNewsHub API - Optimized & Separated Sources"}
+    return {"message": "GlobalNewsHub API - International Sources Only"}
 
 def is_content_safe(text: str) -> bool:
     text_lower = text.lower()
@@ -107,11 +102,22 @@ def parse_date_safely(entry):
                         continue
     return None, None
 
+# دالة جلب مصدر واحد مع هوية متصفح وهمية (User-Agent) لضمان عدم الحظر
 def fetch_single_source(source_key, source_info, search_terms, cutoff_date):
     articles = []
     try:
-        feed = feedparser.parse(source_info['url'])
-        for entry in feed.entries[:10]: # جلب آخر 10 أخبار فقط من كل مصدر للسرعة
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/rss+xml, application/xml, text/xml'
+        }
+        
+        feed = feedparser.parse(source_info['url'], request_headers=headers)
+        
+        if feed.bozo and feed.status != 200:
+            print(f"Blocked or error from {source_key}: Status {feed.status}")
+            return articles
+
+        for entry in feed.entries[:15]: # جلب آخر 15 خبر من كل مصدر دولي
             title = entry.title
             if not is_content_safe(title): continue
             
@@ -151,7 +157,7 @@ def search_news(request: SearchRequest):
 
     query_lower = request.query.lower().strip()
     
-    # إضافة النص الأصلي للبحث لضمان العثور على الأخبار المحلية
+    # إضافة النص الأصلي للبحث لضمان العثور على الأخبار
     search_terms = [query_lower] 
     
     for ar_word, synonyms in SYNONYMS.items():
@@ -170,11 +176,11 @@ def search_news(request: SearchRequest):
 
     cutoff_date = datetime.now() - timedelta(days=request.max_days)
 
-    # ✅ الفصل التام للمصادر بناءً على نوع البحث
+    # ✅ تحديد المصادر بناءً على نوع البحث
     if request.global_search:
-        target_sources = SECONDARY_SOURCES # البحث الشامل يستخدم المدونات والتحليلات فقط
+        target_sources = SECONDARY_SOURCES # البحث الشامل يستخدم المدونات والتحليلات
     else:
-        target_sources = PRIMARY_SOURCES   # البحث العادي يستخدم المصادر الإخبارية السريعة فقط
+        target_sources = INTERNATIONAL_SOURCES   # البحث العادي يستخدم المصادر الدولية فقط
     
     # إذا تم تحديد مصدر معين في البحث العادي
     if request.source_filter and not request.global_search:
@@ -183,7 +189,7 @@ def search_news(request: SearchRequest):
             target_sources = filtered
 
     all_articles = []
-    # تنفيذ متوازٍ لـ 12 مصدراً كحد أقصى (سريع جداً)
+    # تنفيذ متوازٍ للمصادر الدولية (سريع جداً وموثوق)
     with ThreadPoolExecutor(max_workers=12) as executor:
         futures = {
             executor.submit(fetch_single_source, key, info, search_terms, cutoff_date): key 

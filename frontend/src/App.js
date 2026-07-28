@@ -5,22 +5,23 @@ import './App.css';
 
 const API_URL = 'https://globalnewshub-backend.onrender.com/api/search';
 
+// بيانات الصحف العربية والخليجية (للروابط المباشرة فقط)
 const ARABIC_NEWSPAPERS = {
   '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com' },
-  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
-  '🇦 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
+  '🇸 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org' },
+  ' الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae' },
   '🇬 بريطانيا': { 'BBC عربي': 'https://www.bbc.com/arabic', 'القدس العربي': 'https://www.alquds.co.uk' },
-  '🇫🇷 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
-  '🇩🇪 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
-  '🇷🇺 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
+  '🇫 فرنسا': { 'مونت كارلو': 'https://www.mc-doualiya.com', 'فرانس 24': 'https://www.france24.com/ar' },
+  '🇩 ألمانيا': { 'DW عربي': 'https://www.dw.com/ar' },
+  '🇷 روسيا': { 'RT عربي': 'https://arabic.rt.com', 'سبوتنيك': 'https://arabic.sputniknews.com' },
   '🇹🇷 تركيا': { 'الأناضول': 'https://www.aa.com.tr/ar' }
 };
 
 const GULF_NEWSPAPERS = {
-  '🇸🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
+  '🇦 السعودية': { 'العربية': 'https://www.alarabiya.net', 'عكاظ': 'https://www.okaz.com.sa', 'سبق': 'https://sabq.org', 'الاقتصادية': 'https://www.aleqt.com' },
   '🇦 الإمارات': { 'Sky News Arabia': 'https://www.skynewsarabia.com', 'الخليج': 'https://www.alkhaleej.ae', 'البيان': 'https://www.albayan.ae', 'الاتحاد': 'https://www.alittihad.ae' },
   '🇶 قطر': { 'الجزيرة': 'https://www.aljazeera.com', 'عربي21': 'https://arabi21.com', 'الراية': 'https://raya.com' },
-  '🇼 الكويت': { 'القبس': 'https://alqabas.com', 'الرأي': 'https://www.alraimedia.com', 'الأنباء': 'https://www.alanba.com.kw', 'الجريدة': 'https://www.aljarida.com' },
+  '🇰🇼 الكويت': { 'القبس': 'https://alqabas.com', 'الرأي': 'https://www.alraimedia.com', 'الأنباء': 'https://www.alanba.com.kw', 'الجريدة': 'https://www.aljarida.com' },
   '🇧 البحرين': { 'أخبار الخليج': 'https://www.akhbar-alkhaleej.com', 'الوسط': 'https://www.alwasatnews.com' },
   '🇴 عمان': { 'عمان': 'https://www.omandaily.om', 'الرؤية': 'https://www.alroya.om', 'الشبيبة': 'https://www.alshabiba.com' }
 };
@@ -125,7 +126,7 @@ function App() {
       <div style="font-family: 'Tajawal', sans-serif; direction: rtl; padding: 20px;">
         <h1 style="color: #2c3e50; text-align: center;">${article.title}</h1>
         <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>📰 المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
+          <p><strong> المصدر:</strong> ${article.source} | <strong>🌍 الدولة:</strong> ${article.country}</p>
           <p><strong>✅ المصداقية:</strong> ${article.credibility}% | <strong>📅 التاريخ:</strong> ${article.published}</p>
         </div>
         <div style="line-height: 1.8; font-size: 16px;"><h3>ملخص الخبر:</h3><p>${article.summary}</p></div>
@@ -142,16 +143,16 @@ function App() {
 
   const renderArticleCard = (article) => (
     <div key={article.id} className={`article-card ${article.is_breaking ? 'breaking-card' : ''}`}>
-      {article.is_breaking && <span className="breaking-badge">🚨 عاجل</span>}
+      {article.is_breaking && <span className="breaking-badge"> عاجل</span>}
       <h3>{article.title}</h3>
       <p className="article-summary">{article.summary}</p>
       <div className="article-meta">
         <span className="source">📰 {article.source} ({article.country})</span>
-        <span className="date">📅 {article.published}</span>
+        <span className="date"> {article.published}</span>
         <span className={`credibility credibility-${article.credibility > 90 ? 'high' : article.credibility > 80 ? 'medium' : 'low'}`}>✅ مصداقية: {article.credibility}%</span>
       </div>
       <div className="article-actions">
-        <button onClick={() => saveAsPDF(article)} className="action-btn pdf">📄 حفظ PDF</button>
+        <button onClick={() => saveAsPDF(article)} className="action-btn pdf"> حفظ PDF</button>
         <button onClick={() => copyLink(article.link)} className="action-btn copy">📋 نسخ</button>
         <a href={article.link} target="_blank" rel="noopener noreferrer" className="action-btn read-more"> اقرأ الأصل</a>
       </div>
@@ -237,7 +238,7 @@ function App() {
 
           <div className="dropdown-wrapper">
             <button className="filter-select" onClick={() => setActiveMenu(activeMenu === 'gulf' ? null : 'gulf')}>
-              🏛️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
+              ️ الصحف الخليجية {activeMenu === 'gulf' ? '▲' : '▼'}
             </button>
             {activeMenu === 'gulf' && (
               <div className="dropdown-menu slide-up wide-menu">
