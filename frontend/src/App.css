@@ -73,7 +73,19 @@
 .search-container input[type="text"]:focus { outline: none; border-color: #667eea; box-shadow: 0 0 15px rgba(102, 126, 234, 0.3); }
 
 /* ===== التحكم والبحث ===== */
-.search-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.search-controls { 
+  display: flex; 
+  gap: 10px; 
+  flex-wrap: wrap; 
+  align-items: flex-start; 
+  /* إزالة position: relative من هنا لمنع تداخل القوائم */
+}
+
+/* الغلاف الخاص بكل زر لضمان ظهور القائمة تحته مباشرة */
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
 
 .filter-select {
   padding: 15px 20px; border: 2px solid #667eea; border-radius: 10px;
@@ -97,10 +109,17 @@
 
 /* ===== القوائم المنسدلة (حركة الستارة) ===== */
 .dropdown-menu {
-  position: absolute; top: 100%; right: 0; margin-top: 5px;
-  background-color: white; border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000;
-  min-width: 220px; max-height: 400px; overflow-y: auto;
+  position: absolute; 
+  top: 100%; 
+  right: 0; 
+  margin-top: 5px;
+  background-color: white; 
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2); 
+  z-index: 9999; /* رفع الطبقة لتظهر فوق كل شيء */
+  min-width: 220px; 
+  max-height: 400px; 
+  overflow-y: auto;
 }
 
 .slide-up { animation: slideUpAnim 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform-origin: bottom center; }
